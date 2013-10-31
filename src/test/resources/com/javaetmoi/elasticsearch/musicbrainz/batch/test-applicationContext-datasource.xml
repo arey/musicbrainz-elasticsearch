@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+           http://www.springframework.org/schema/beans    http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+           http://www.springframework.org/schema/jdbc     http://www.springframework.org/schema/jdbc/spring-jdbc-3.2.xsd
+        ">
+
+    <jdbc:embedded-database id="musicBrainzDataSource" type="H2">
+        <jdbc:script location="classpath:com/javaetmoi/elasticsearch/musicbrainz/db/CreateTables.sql" />
+        <jdbc:script location="classpath:com/javaetmoi/elasticsearch/musicbrainz/db/CreateFKConstraints.sql" />
+    </jdbc:embedded-database>
+
+</beans>

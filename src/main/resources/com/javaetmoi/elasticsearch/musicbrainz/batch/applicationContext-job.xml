@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+  xmlns:p="http://www.springframework.org/schema/p" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:c="http://www.springframework.org/schema/c"
+  xmlns:context="http://www.springframework.org/schema/context" xmlns:task="http://www.springframework.org/schema/task"
+  xmlns:batch="http://www.springframework.org/schema/batch"
+  xsi:schemaLocation="
+           http://www.springframework.org/schema/beans    http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+           http://www.springframework.org/schema/batch    http://www.springframework.org/schema/batch/spring-batch-2.2.xsd
+           http://www.springframework.org/schema/context  http://www.springframework.org/schema/context/spring-context-3.2.xsd
+           http://www.springframework.org/schema/jdbc     http://www.springframework.org/schema/jdbc/spring-jdbc-3.2.xsd
+           http://www.springframework.org/schema/task     http://www.springframework.org/schema/task/spring-task-3.2.xsd
+        ">
+
+
+  <task:executor id="batchTaskExecutor" pool-size="${batch.thread}" />
+
+  <context:component-scan base-package="com.javaetmoi.elasticsearch.musicbrainz.batch.mapper" />
+
+  <job id="musicAlbumJob" xmlns="http://www.springframework.org/schema/batch">
+    <step id="deleteIndexIfExists" next="createIndexSettings">
+      <tasklet ref="deleteIndexTasklet" />
+    </step>
+    <step id="createIndexSettings" next="createIndexMapping">
+      <tasklet ref="createIndexSettingsTasklet" />
+    </step>
+    <step id="createIndexMapping" next="indexMusicAlbum">
+      <tasklet ref="createIndexMappingTasklet" />
+    </step>
+    <step id="indexMusicAlbum">
+      <!-- Executes partition steps locally in separate threads of execution -->
+      <batch:partition step="indexMusicAlbumPartition" partitioner="partitionerMusicAlbum">
+        <batch:handler grid-size="${batch.partition}" task-executor="batchTaskExecutor" />
+      </batch:partition>
+    </step>
+  </job>
+
+  <!-- Read music albums from database then index them into ElasticSearch -->
+  <batch:step id="indexMusicAlbumPartition">
+    <tasklet transaction-manager="musicBrainzTransactionManager">
+      <chunk reader="musicAlbumReader" processor="musicAlbumProcessor" writer="musicAlbumWriter"
+        commit-interval="${batch.commit.interval}" retry-limit="3">
+        <retryable-exception-classes>
+          <include class="org.elasticsearch.client.transport.NoNodeAvailableException" />
+          <include class="org.elasticsearch.transport.ReceiveTimeoutTransportException" />
+        </retryable-exception-classes>
+      </chunk>
+      <listeners>
+        <listener>
+            <bean class="com.javaetmoi.core.batch.listener.LogStepListener" scope="step"
+                p:commitInterval="${batch.commit.interval}"/>
+        </listener>
+      </listeners>
+    </tasklet>
+  </batch:step>
+
+  <bean id="deleteIndexTasklet" class="com.javaetmoi.core.batch.tasklet.DeleteElasticIndexTasklet"
+    p:esClient-ref="esClient" p:indexName="${es.index}" />
+
+  <bean id="createIndexSettingsTasklet" class="com.javaetmoi.core.batch.tasklet.CreateElasticIndexSettingsTasklet"
+    p:esClient-ref="esClient" p:indexName="${es.index}" p:indexSettings="${es.settings.filename}" />
+
+  <bean id="createIndexMappingTasklet" class="com.javaetmoi.core.batch.tasklet.CreateElasticIndexMappingTasklet"
+    p:esClient-ref="esClient" p:indexName="${es.index}" p:indexMapping="${es.mapping.filename}" p:mappingType="${es.mapping.type}" />
+
+  <bean id="musicAlbumReader" class="org.springframework.batch.item.database.JdbcCursorItemReader" scope="step"
+    p:dataSource-ref="musicBrainzDataSource" p:rowMapper-ref="albumRowMapper">
+    <property name="sql">
+      <value><![CDATA[
+            SELECT 
+                release_group.id AS albumId,                
+                release_group.gid AS albumGid,
+                release_group.type AS albumPrimaryTypeId,
+                release_name.name AS albumName,
+                artist_name.name AS artistName,
+                artist.gid AS artistGid,
+                artist.type as artistTypeId,    
+                artist.begin_date_year artistBeginDateYear,
+                artist.gender as artistGenderId,
+                area.name as artistCountryName,
+                artist_meta.rating artistRatingScore,
+                artist_meta.rating_count artistRatingCount,
+                release_group_meta.first_release_date_year albumYear,
+                release_group_meta.rating albumRatingScore,
+                release_group_meta.rating_count albumRatingCount 
+            FROM
+                artist
+             INNER JOIN artist_credit_name
+                ON artist_credit_name.artist = artist.id
+             INNER JOIN artist_credit
+                ON artist_credit.id = artist_credit_name.artist_credit
+             INNER JOIN release_group
+                ON release_group.artist_credit = artist_credit.id
+             INNER JOIN release_name
+                ON release_name.id = release_group.name
+             INNER JOIN artist_name 
+               ON artist.name = artist_name.id
+             INNER JOIN area
+               ON artist.area = area.id
+             LEFT OUTER JOIN release_group_secondary_type_join
+                ON release_group_secondary_type_join.release_group = release_group.id
+             LEFT OUTER JOIN artist_meta
+                ON artist.id = artist_meta.id    
+             LEFT OUTER JOIN release_group_meta
+                ON release_group_meta.id = release_group.id 
+            WHERE
+                release_group.type = '1'
+                  AND artist_credit.artist_count = 1
+                AND release_group_secondary_type_join.secondary_type IS NULL
+                AND release_group.id >= ? and release_group.id <= ?
+            ]]></value>
+    </property>
+    <property name="preparedStatementSetter">
+      <bean class="org.springframework.batch.core.resource.ListPreparedStatementSetter">
+        <property name="parameters">
+          <list>
+            <!-- SPeL parameters order is important because it referes to "where album_id >= ? and album_id <= ?" -->
+            <value>#{stepExecutionContext[minValue]}</value>
+            <value>#{stepExecutionContext[maxValue]}</value>
+          </list>
+        </property>
+      </bean>
+    </property>
+  </bean>
+
+  <bean id="musicAlbumWriter" class="com.javaetmoi.core.batch.item.EsDocumentWriter" 
+    p:indexName="${es.index}" p:esClient-ref="esClient" p:timeout="${es.index.timeout}" />
+    
+  <bean id="musicAlbumProcessor" class="org.springframework.batch.item.support.CompositeItemProcessor"> 
+    <property name="delegates">
+        <list>
+            <bean class="com.javaetmoi.elasticsearch.musicbrainz.batch.item.EnhanceAlbumProcessor" />
+            <bean class="com.javaetmoi.elasticsearch.musicbrainz.batch.item.MusicAlbumDocumentProcessor"
+                p:documentType="${es.mapping.type}" />
+        </list>
+    </property>
+  </bean>
+  
+
+  <!-- The partitioner finds the minimum and maximum primary keys in the music album table to obtain a count of rows and 
+    then calculates the number of rows in the partition -->
+  <bean id="partitionerMusicAlbum" class="com.javaetmoi.core.batch.partition.ColumnRangePartitioner">
+    <property name="dataSource" ref="musicBrainzDataSource" />
+    <property name="table" value="release_group" />
+    <property name="column" value="id" />
+  </bean>
+
+</beans>

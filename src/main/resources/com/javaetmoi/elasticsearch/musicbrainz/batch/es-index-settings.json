@@ -1,0 +1,49 @@
+{
+    "index": {
+        "number_of_shards": 1,
+        "number_of_replicas": 0,    
+        "analysis": {
+          "filter": {
+            "myEdgeNGram": {
+              "side": "front",
+              "max_gram": 10,
+              "min_gram": 1,
+              "type": "edgeNGram"
+            }
+          },
+          "analyzer": {
+            "myStandardAnalyzer": {
+              "filter": [
+                "standard",
+                "lowercase",
+                "asciifolding"
+              ],
+              "type": "custom",
+              "tokenizer": "standard"
+            },
+            "myPartialNameAnalyzer": {
+              "filter": [
+                "standard",
+                "lowercase",
+                "asciifolding",
+                "myEdgeNGram"
+              ],
+              "type": "custom",
+              "tokenizer": "standard"
+            },
+            "myIdAnalyzer": {
+              "tokenizer": "keyword",
+              "filter": [
+                "lowercase"
+              ]
+            },
+            "myBasicAnalyzer": {
+              "tokenizer": "whitespace",
+              "filter": [
+                "lowercase"
+              ]
+            }
+          }
+        }
+    }         
+}

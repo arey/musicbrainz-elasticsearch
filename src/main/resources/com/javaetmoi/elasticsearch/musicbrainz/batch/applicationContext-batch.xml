@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:p="http://www.springframework.org/schema/p"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:c="http://www.springframework.org/schema/c" xmlns:context="http://www.springframework.org/schema/context"
+  xmlns:batch="http://www.springframework.org/schema/batch"
+  xsi:schemaLocation="
+           http://www.springframework.org/schema/beans    http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+           http://www.springframework.org/schema/context  http://www.springframework.org/schema/context/spring-context-3.2.xsd
+           http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch-2.2.xsd
+        ">
+
+  <context:property-placeholder location="com/javaetmoi/elasticsearch/musicbrainz/batch/es-musicbrainz-batch.properties" />
+  
+  <import resource="classpath:com/javaetmoi/elasticsearch/musicbrainz/batch/applicationContext-job.xml"/>
+
+  <!-- Datasource transaction manager used forbatch processing -->
+  <bean id="musicBrainzTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager"
+    p:dataSource-ref="musicBrainzDataSource" />
+
+
+  <!-- Helps with testing (autowired, injected in the test instance) -->
+  <!-- bean class="org.springframework.batch.test.JobLauncherTestUtils" lazy-init="true" /-->
+
+  <!-- Starts a job execution -->
+  <bean id="jobLauncher" class="org.springframework.batch.core.launch.support.SimpleJobLauncher">
+    <property name="jobRepository" ref="jobRepository" />
+  </bean>
+
+  <!-- Resourceless transaction manager -->
+  <bean id="transactionManager" class="org.springframework.batch.support.transaction.ResourcelessTransactionManager" />
+
+  <!-- In-memory database repository -->
+  <bean id="jobRepository" class="org.springframework.batch.core.repository.support.MapJobRepositoryFactoryBean">
+    <property name="transactionManager" ref="transactionManager" />
+  </bean>
+
+</beans>
