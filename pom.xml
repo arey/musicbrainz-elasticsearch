@@ -4,7 +4,7 @@
 
   <groupId>com.javaetmoi.elasticsearch</groupId>
   <artifactId>musicbrainz-elasticsearch</artifactId>
-  <name>JavaEtMoi Core :: ${project.artifactId} - ${project.packaging}</name>
+  <name>JavaEtMoi Elasticsearch :: ${project.artifactId} - ${project.packaging}</name>
   <version>1.1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   <description>Index music album from the MusicBrainz open music encyclopedia into Elasticsearch</description>
@@ -82,6 +82,7 @@
     <version.plugin.maven-javadoc-plugin>2.7</version.plugin.maven-javadoc-plugin>
     <version.plugin.maven-release-plugin>2.2.2</version.plugin.maven-release-plugin>
     <version.plugin.exec-maven-plugin>1.2.1</version.plugin.exec-maven-plugin>
+    <version.plugin.maven-deploy-plugin>2.8.1</version.plugin.maven-deploy-plugin> 
 
     <!-- Version of maven extensions -->
     <version.extension.wagon-webdav>1.0-beta-2</version.extension.wagon-webdav>
@@ -275,6 +276,11 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>${version.plugin.maven-javadoc-plugin}</version>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin </artifactId>
+        <version>${version.plugin.maven-deploy-plugin}</version>
+      </plugin>      
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
