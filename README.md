@@ -108,5 +108,13 @@ French articles on the [javaetmoi.com](http://javaetmoi.com) blog:
 ## Credits ##
 
 * Uses [Maven](http://maven.apache.org/) as a build tool
-* Uses [Cloudbees](http://www.cloudbees.com/foss) for continuous integration builds whenever code is pushed into GitHub
+* Uses [Cloudbees](http://www.cloudbees.com/foss) and [Travis CI](www.travis-ci.org) for continuous integration builds whenever code is pushed into GitHub
 * Authors of all used open source librairies
+
+## Build Status ##
+
+Travis : [![Build
+Status](https://travis-ci.org/arey/musicbrainz-elasticsearch.png?branch=master)](https://travis-ci.org/arey/musicbrainz-elasticsearch)
+
+Cloudbees Jenkins : [![Build
+Status](https://javaetmoi.ci.cloudbees.com/job/musicbrainz-elasticsearch/badge/icon)](https://javaetmoi.ci.cloudbees.com/job/musicbrainz-elasticsearch/)
