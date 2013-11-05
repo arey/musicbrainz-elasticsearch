@@ -41,7 +41,7 @@ Once finished the [MusicBrainz Server setup guide](http://musicbrainz.org/doc/Mu
 1. **Configuring port forwarding with NAT**<br/>
 Port forwarding enables VirtualBox to listen to certain ports on the host and resends all packets which arrive there to the guest, on the same or a different port. You may used same port on host and guest. Configure two rules (the second is optional): 
 
-- PostgreSQL database - TCP - host : 4532 / guest : 5432 
+- PostgreSQL database - TCP - host : 5432 / guest : 5432 
 - MusicBrainz web server : TCP - host : 5000 / guest : 5000
 
 2. **Configuring PostgreSQL**<br />
