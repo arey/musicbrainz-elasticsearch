@@ -90,6 +90,8 @@ public class CreateElasticIndexSettingsTasklet implements Tasklet {
     
     /**
      * Sets the JSON resource defining index settings.
+     * <p>
+     * File has to be encoded in UTF-8.
      * 
      * @param indexSettings
      *            Spring resource descriptor, such as a file or class path resource.
