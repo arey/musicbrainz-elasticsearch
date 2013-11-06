@@ -16,10 +16,6 @@
   <bean id="musicBrainzTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager"
     p:dataSource-ref="musicBrainzDataSource" />
 
-
-  <!-- Helps with testing (autowired, injected in the test instance) -->
-  <!-- bean class="org.springframework.batch.test.JobLauncherTestUtils" lazy-init="true" /-->
-
   <!-- Starts a job execution -->
   <bean id="jobLauncher" class="org.springframework.batch.core.launch.support.SimpleJobLauncher">
     <property name="jobRepository" ref="jobRepository" />
