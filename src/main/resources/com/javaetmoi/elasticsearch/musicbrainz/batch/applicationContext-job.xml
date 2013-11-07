@@ -113,7 +113,7 @@
       <bean class="org.springframework.batch.core.resource.ListPreparedStatementSetter">
         <property name="parameters">
           <list>
-            <!-- SPeL parameters order is important because it referes to "where album_id >= ? and album_id <= ?" -->
+            <!-- SPeL parameters order is important because it referes to "where release_group >= ? and release_group <= ?" -->
             <value>#{stepExecutionContext[minValue]}</value>
             <value>#{stepExecutionContext[maxValue]}</value>
           </list>
