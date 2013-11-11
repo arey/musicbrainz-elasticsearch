@@ -69,6 +69,9 @@ You may also prefer to keep the default _elasticsearch_ cluster name and change 
 
 ## Demo
 
+MusicBrainz database searching with Elasticsearch : 
+[http://musicsearch.javaetmoi.com/](http://musicsearch.javaetmoi.com/ "MusicBrainz database searching with Elasticsearch")
+
 ![My Demo Screenshot](https://raw.github.com/arey/musicbrainz-elasticsearch/gh-pages/img/musicbrainz-elasticsearch-gui.png "My Demo Screenshot")
 
 
