@@ -67,6 +67,10 @@ You may also prefer to keep the default _elasticsearch_ cluster name and change 
 * `mvn install`
 * `mvn exec:java` (execute the *IndexBatchMain* main class) 
 
+## Demo
+
+![My Demo Screenshot](https://raw.github.com/arey/musicbrainz-elasticsearch/gh-pages/img/musicbrainz-elasticsearch-gui.png "My Demo Screenshot")
+
 
 ## Contributing to MusicBrainz Elasticsearch project ##
 
