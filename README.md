@@ -74,6 +74,8 @@ MusicBrainz database searching with Elasticsearch :
 
 ![My Demo Screenshot](https://raw.github.com/arey/musicbrainz-elasticsearch/gh-pages/img/musicbrainz-elasticsearch-gui.png "My Demo Screenshot")
 
+For command line testing, you could execute the two following curl scripts: [musicbrainz_autocomplete_u2.sh](https://gist.github.com/arey/7436834 "Gist musicbrainz_autocomplete_u2.sh ") and [musicbrainz_fulltext_u2_war.sh
+](https://gist.github.com/arey/7436893 "Gist musicbrainz_fulltext_u2_war.sh ")
 
 ## Contributing to MusicBrainz Elasticsearch project ##
 
