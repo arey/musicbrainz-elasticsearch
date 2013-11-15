@@ -101,6 +101,7 @@ Otherwise, generate IDE metadata with the related IDE maven plugin:
 French articles on the [javaetmoi.com](http://javaetmoi.com) blog:
 
 * [Parallélisation de traitements batchs](http://javaetmoi.com/2012/12/parallelisation-de-traitements-batchs/)
+* [Elastifiez la base MusicBrainz sur OpenShift](http://javaetmoi.com/2013/11/musicbrainz-elasticsearch-angularjs-openshift/)
 
 
 ## Release Note ##
@@ -110,7 +111,10 @@ French articles on the [javaetmoi.com](http://javaetmoi.com) blog:
     <th>Version</th><th>Release date</th><th>Features date</th>
   </tr>
   <tr>
-    <td>1.0</td><td>26/10/2013</td><td>Initial version developed for a workshop  about Elasticsearch</td>
+    <td>1.1-SNAPSHOT</td><td>Next version</td><td>Elasticsearch 0.90.7 update</td>
+  </tr>
+  <tr>
+    <td>1.0</td><td>26/10/2013</td><td>Initial version developed for a workshop about Elasticsearch (0.90.5)</td>
   </tr>
 </table>
 
