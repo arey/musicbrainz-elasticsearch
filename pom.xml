@@ -63,7 +63,7 @@
 
     <!-- Version of ElasticSearch -->
     <version.elasticsearch>0.90.7</version.elasticsearch>
-    <version.spring-elasticsearch>0.2.0</version.spring-elasticsearch>
+    <version.spring-elasticsearch>0.3.0</version.spring-elasticsearch>
 
     <!-- Database -->
     <version.postgresql>9.1-901-1.jdbc4</version.postgresql>
