@@ -62,7 +62,7 @@
     <version.musicbrainz-data>3.1.0</version.musicbrainz-data>
 
     <!-- Version of ElasticSearch -->
-    <version.elasticsearch>0.90.9</version.elasticsearch>
+    <version.elasticsearch>1.0.0</version.elasticsearch>
     <version.spring-elasticsearch>0.3.0</version.spring-elasticsearch>
 
     <!-- Database -->

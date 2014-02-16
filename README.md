@@ -111,7 +111,7 @@ French articles on the [javaetmoi.com](http://javaetmoi.com) blog:
     <th>Version</th><th>Release date</th><th>Features date</th>
   </tr>
   <tr>
-    <td>1.1-SNAPSHOT</td><td>Next version</td><td>Elasticsearch 0.90.9 update</td>
+    <td>1.1-SNAPSHOT</td><td>Next version</td><td>Elasticsearch 1.0.0 update</td>
   </tr>
   <tr>
     <td>1.0</td><td>26/10/2013</td><td>Initial version developed for a workshop about Elasticsearch (0.90.5)</td>
