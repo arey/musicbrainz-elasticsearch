@@ -131,3 +131,7 @@ Status](https://travis-ci.org/arey/musicbrainz-elasticsearch.png?branch=master)]
 
 Cloudbees Jenkins : [![Build
 Status](https://javaetmoi.ci.cloudbees.com/job/musicbrainz-elasticsearch/badge/icon)](https://javaetmoi.ci.cloudbees.com/job/musicbrainz-elasticsearch/)
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/arey/musicbrainz-elasticsearch/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
