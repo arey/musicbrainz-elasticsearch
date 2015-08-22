@@ -13,21 +13,20 @@
  */
 package com.javaetmoi.elasticsearch.musicbrainz.batch;
 
-import static com.ninja_squad.dbsetup.Operations.sequenceOf;
-import static org.junit.Assert.assertEquals;
-
-import javax.sql.DataSource;
-
+import com.javaetmoi.core.elasticsearch.ElasticSearchHelper;
+import com.ninja_squad.dbsetup.DbSetup;
+import com.ninja_squad.dbsetup.destination.DataSourceDestination;
+import com.ninja_squad.dbsetup.operation.Operation;
 import org.elasticsearch.action.ActionFuture;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthStatus;
-import org.elasticsearch.action.admin.indices.status.DocsStatus;
-import org.elasticsearch.action.admin.indices.status.IndicesStatusRequest;
-import org.elasticsearch.action.admin.indices.status.IndicesStatusResponse;
+import org.elasticsearch.action.admin.indices.stats.IndicesStatsRequest;
+import org.elasticsearch.action.admin.indices.stats.IndicesStatsResponse;
 import org.elasticsearch.client.AdminClient;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.ClusterAdminClient;
+import org.elasticsearch.index.shard.DocsStats;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,10 +39,10 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.javaetmoi.core.elasticsearch.ElasticSearchHelper;
-import com.ninja_squad.dbsetup.DbSetup;
-import com.ninja_squad.dbsetup.destination.DataSourceDestination;
-import com.ninja_squad.dbsetup.operation.Operation;
+import javax.sql.DataSource;
+
+import static com.ninja_squad.dbsetup.Operations.sequenceOf;
+import static org.junit.Assert.assertEquals;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -88,14 +87,14 @@ public class TestMusicAlbumJob {
         
         // Elasticsearch status
         ElasticSearchHelper.refreshIndex(client);
-        DocsStatus docs = getDocStatus();
-        assertEquals(13, docs.getNumDocs());
+        DocsStats docs = getDocStats();
+        assertEquals(13, docs.getCount());
     }
 
-    protected DocsStatus getDocStatus() {
-        IndicesStatusRequest isRequest = new IndicesStatusRequest();
-        IndicesStatusResponse isResponse = client.admin().indices().status(isRequest).actionGet();
-        return isResponse.getAt(0).getDocs();
+    protected DocsStats getDocStats() {
+        IndicesStatsRequest request = new IndicesStatsRequest().docs(true);
+        IndicesStatsResponse response = client.admin().indices().stats(request).actionGet();
+        return response.getIndex("musicbrainz").getTotal().docs;
     }
         
     

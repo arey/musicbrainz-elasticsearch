@@ -1,100 +1,98 @@
 {
-  "mappings": {
-    "_source": {
-      "enabled": "true",
-      "compress": "true"
+  "_source": {
+    "enabled": "true",
+    "compress": "true"
+  },
+  "properties": {
+    "id": {
+      "type": "string",
+      "analyzer": "myIdAnalyzer"
     },
-    "properties": {
-      "id": {
-        "type": "string",
-        "analyzer": "myIdAnalyzer"
-      },
-      "name": {
-        "type": "multi_field",
-        "fields": {
-          "name": {
-            "type": "string",
-            "analyzer": "myStandardAnalyzer"
-          },
-          "start": {
-            "search_analyzer": "myStandardAnalyzer",
-            "index_analyzer": "myPartialNameAnalyzer",
-            "type": "string"
-          }
+    "name": {
+      "type": "multi_field",
+      "fields": {
+        "name": {
+          "type": "string",
+          "analyzer": "myStandardAnalyzer"
+        },
+        "start": {
+          "search_analyzer": "myStandardAnalyzer",
+          "index_analyzer": "myPartialNameAnalyzer",
+          "type": "string"
         }
-      },
-      "year": {
-        "type": "multi_field",
-        "fields": {
-          "year": {
-            "type": "date",
-            "format": "year"
-          },
-          "string": {
-            "type": "string",
-            "analyzer": "myBasicAnalyzer"
-          }
+      }
+    },
+    "year": {
+      "type": "multi_field",
+      "fields": {
+        "year": {
+          "type": "date",
+          "format": "year"
+        },
+        "string": {
+          "type": "string",
+          "analyzer": "myBasicAnalyzer"
         }
-      },
-      "rating": {
-        "type": "object",
-        "properties": {
-          "score": {
-            "type": "integer"
-          },
-          "count": {
-            "type": "integer"
-          }
+      }
+    },
+    "rating": {
+      "type": "object",
+      "properties": {
+        "score": {
+          "type": "integer"
+        },
+        "count": {
+          "type": "integer"
         }
-      },
-      "tags": {
-        "type": "string",
-        "index_name": "tag"
-      },
-      "artist": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "multi_field",
-            "fields": {
-              "name": {
-                "type": "string",
-                "analyzer": "myStandardAnalyzer"
-              },
-              "start": {
-                "search_analyzer": "myStandardAnalyzer",
-                "index_analyzer": "myPartialNameAnalyzer",
-                "type": "string"
-              }
+      }
+    },
+    "tags": {
+      "type": "string",
+      "index_name": "tag"
+    },
+    "artist": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "multi_field",
+          "fields": {
+            "name": {
+              "type": "string",
+              "analyzer": "myStandardAnalyzer"
+            },
+            "start": {
+              "search_analyzer": "myStandardAnalyzer",
+              "index_analyzer": "myPartialNameAnalyzer",
+              "type": "string"
             }
-          },
-          "type_id": {
-            "type": "integer"
-          },
-          "type_name": {
-            "type": "string"
-          },
-          "begin_date_year": {
-            "type": "date",
-            "format": "year"
-          },
-          "country_name": {
-            "type": "string",
-            "analyzer": "myStandardAnalyzer"
-          },
-          "gender": {
-            "type": "string",
-            "analyzer": "myBasicAnalyzer"
-          },
-          "rating": {
-            "type": "object",
-            "properties": {
-              "score": {
-                "type": "integer"
-              },
-              "count": {
-                "type": "integer"
-              }
+          }
+        },
+        "type_id": {
+          "type": "integer"
+        },
+        "type_name": {
+          "type": "string"
+        },
+        "begin_date_year": {
+          "type": "date",
+          "format": "year"
+        },
+        "country_name": {
+          "type": "string",
+          "analyzer": "myStandardAnalyzer"
+        },
+        "gender": {
+          "type": "string",
+          "analyzer": "myBasicAnalyzer"
+        },
+        "rating": {
+          "type": "object",
+          "properties": {
+            "score": {
+              "type": "integer"
+            },
+            "count": {
+              "type": "integer"
             }
           }
         }
