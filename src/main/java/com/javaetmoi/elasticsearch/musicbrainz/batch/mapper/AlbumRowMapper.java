@@ -16,13 +16,13 @@ package com.javaetmoi.elasticsearch.musicbrainz.batch.mapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import com.javaetmoi.elasticsearch.musicbrainz.domain.ArtistType;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
 import com.javaetmoi.elasticsearch.musicbrainz.domain.Album;
 import com.javaetmoi.elasticsearch.musicbrainz.domain.Artist;
 
-import fm.last.musicbrainz.data.model.ArtistType;
 import fm.last.musicbrainz.data.model.Gender;
 import fm.last.musicbrainz.data.model.ReleaseGroupPrimaryType;
 

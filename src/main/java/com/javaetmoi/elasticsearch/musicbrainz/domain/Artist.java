@@ -13,7 +13,6 @@
  */
 package com.javaetmoi.elasticsearch.musicbrainz.domain;
 
-import fm.last.musicbrainz.data.model.ArtistType;
 import fm.last.musicbrainz.data.model.Gender;
 
 public class Artist {
