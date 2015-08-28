@@ -29,35 +29,9 @@ public class ArtistU2Operations {
 
 	private static final int RELEASE_GROUP_WAR_ID = 1281;
 
-	private static final int ARTIST_NAME_ID_U2 = 172891;
-	
 	private static final int ARTIST_ID_U2 = 197;
 
 	private static final int ARTIST_CREDIT_U2_ID = ARTIST_ID_U2;
-
-	private static final int RELEASE_NAME_OCTOBER_ID = 587506;
-
-	private static final int RELEASE_NAME_CHILDREN_REVOLUTION_ID = 174695;
-
-	private static final int RELEASE_NAME_BOY_ID = 778983;
-
-	private static final int RELEASE_NAME_POP_ID = 502696;
-
-	private static final int RELEASE_NAME_NO_LINE_HORIZON_ID = 344952;
-
-	private static final int RELEASE_NAME_ZOOROPA_ID = 471899;
-
-	private static final int RELEASE_NAME_JOSHUA_TREE_ID = 280859;
-
-	private static final int RELEASE_NAME_ALL_CANT_LEAVE_BEHIND_ID = 807588;
-
-	private static final int RELEASE_NAME_UNFORGETTABLE_FIRE_ID = 503249;
-	
-	private static final int RELEASE_NAME_ACHTUNG_BABY_ID = 776916;
-
-	private static final int RELEASE_NAME_HOW_DISMANTLE_ATOMIC_BOMB_ID = 64513;
-
-	private static final int RELEASE_NAME_RATTLE_HUM_ID = 496969;
 
 	private static final int RELEASE_GROUP_OCTOBER_ID = 3941;
 
@@ -91,28 +65,20 @@ public class ArtistU2Operations {
 	
 	public static final Operation RELEASE_GROUP_U2_ROWS =
 		 sequenceOf(
-				insertArtistName(),
 				insertArtist(),
 				insertArtistMeta(),
-				insertReleaseName(),
 				insertArtistCredit(),
 				insertArtistCreditName(),
 				insertReleaseGroup(),
 				insertReleaseGroupMeta(),
 				insertReleaseGroupTag());
 	
-	
-	private static Operation insertArtistName() {
-        return insertInto("artist_name")
-	            .columns("id", "name")
-	            .values(ARTIST_NAME_ID_U2, "U2")
-	            .build();
-	}
+
 	
 	private static Operation insertArtist() {
         return insertInto("artist")
 	            .columns("id", "gid", "name", "sort_name", "begin_date_year", "type", "area", "gender")
-	            .values(ARTIST_ID_U2, "a3cb23fc-acd3-4ce0-8f36-1e5aa6a18432", ARTIST_NAME_ID_U2, ARTIST_NAME_ID_U2, 1976, ARTIST_TYPE_GROUP_ID, AREA_IRELAND_ID, null)
+	            .values(ARTIST_ID_U2, "a3cb23fc-acd3-4ce0-8f36-1e5aa6a18432", "U2", "U2", 1976, ARTIST_TYPE_GROUP_ID, AREA_IRELAND_ID, null)
 	            .build();
 	}
 	
@@ -121,31 +87,12 @@ public class ArtistU2Operations {
 	            .columns("id", "rating", "rating_count")
 	            .values(ARTIST_ID_U2, 87, 21)
 	            .build();
-	}	
-	
-	private static Operation insertReleaseName() {
-        return insertInto("release_name")
-	            .columns("id", "name")
-	            .values(RELEASE_NAME_WAR_ID, "War")
-	            .values(RELEASE_NAME_OCTOBER_ID, "October")
-	            .values(RELEASE_NAME_CHILDREN_REVOLUTION_ID, "Children of the Revolution")
-	            .values(RELEASE_NAME_BOY_ID, "Boy")
-	            .values(RELEASE_NAME_POP_ID, "Pop")
-	            .values(RELEASE_NAME_NO_LINE_HORIZON_ID, "No Line on the Horizon")
-	            .values(RELEASE_NAME_ZOOROPA_ID, "Zooropa")
-	            .values(RELEASE_NAME_JOSHUA_TREE_ID, "The Joshua Tree")
-	            .values(RELEASE_NAME_ALL_CANT_LEAVE_BEHIND_ID, "All That You Can't Leave Behind")
-	            .values(RELEASE_NAME_UNFORGETTABLE_FIRE_ID, "The Unforgettable Fire")
-	            .values(RELEASE_NAME_ACHTUNG_BABY_ID, "Achtung Baby")
-	            .values(RELEASE_NAME_HOW_DISMANTLE_ATOMIC_BOMB_ID, "How to Dismantle an Atomic Bomb")
-	            .values(RELEASE_NAME_RATTLE_HUM_ID, "Rattle and Hum")
-	            .build();
 	}
 	
 	private static Operation insertArtistCredit() {
         return insertInto("artist_credit")
 	            .columns("id", "name", "artist_count")
-	            .values(ARTIST_CREDIT_U2_ID, ARTIST_NAME_ID_U2, 1)
+	            .values(ARTIST_CREDIT_U2_ID, "U2", 1)
 	            .build();
 	}
 	
@@ -153,7 +100,7 @@ public class ArtistU2Operations {
         return insertInto("artist_credit_name")
         		.withDefaultValue("position", 1)
 	            .columns("artist_credit", "artist", "name")
-	            .values(ARTIST_CREDIT_U2_ID, ARTIST_ID_U2, ARTIST_NAME_ID_U2)
+	            .values(ARTIST_CREDIT_U2_ID, ARTIST_ID_U2, "U2")
 	            .build();
 	}		
 	
@@ -163,19 +110,19 @@ public class ArtistU2Operations {
 	            .columns("id", "gid", "name")
 	            .withDefaultValue("type", 1)
 	            .withDefaultValue("artist_credit", ARTIST_CREDIT_U2_ID)
-	            .values(RELEASE_GROUP_WAR_ID, "c6b36664-7e60-3b3e-a24d-d096c67a11e9", RELEASE_NAME_WAR_ID)
-	            .values(RELEASE_GROUP_OCTOBER_ID, "87febb2c-e117-3a0d-a7f6-8fd9a6421af1", RELEASE_NAME_OCTOBER_ID)
-	            .values(RELEASE_GROUP_CHILDREN_REVOLUTION_ID, "19b0ac91-f0eb-3ac9-8187-f602039e4090", RELEASE_NAME_CHILDREN_REVOLUTION_ID)
-	            .values(RELEASE_GROUP_BOY_ID, "53b0d89e-f856-3015-a3a6-a70e1e935fd6", RELEASE_NAME_BOY_ID)
-	            .values(RELEASE_GROUP_POP_ID, "5eca5ea6-841b-3835-b368-94fb71d8f932", RELEASE_NAME_POP_ID)
-	            .values(RELEASE_GROUP_NO_LINE_HORIZON_ID, "acaa5e04-685c-3e47-af62-1cd3012008b6", RELEASE_NAME_NO_LINE_HORIZON_ID)
-	            .values(RELEASE_GROUP_ZOOROPA_ID, "7c705df7-46e7-3c27-9693-72b3ea559c48", RELEASE_NAME_ZOOROPA_ID)
-	            .values(RELEASE_GROUP_JOSHUA_TREE_ID, "6f3e9fa6-be7a-3de8-a2b2-2072ece8a54d", RELEASE_NAME_JOSHUA_TREE_ID)
-	            .values(RELEASE_GROUP_ALL_CANT_LEAVE_BEHIND_ID, "88c59b55-200d-3ac1-beff-8eb99830807e", RELEASE_NAME_ALL_CANT_LEAVE_BEHIND_ID)
-	            .values(RELEASE_GROUP_UNFORGETTABLE_FIRE_ID, "c84d00f4-afd3-3184-be62-6ae5f135aa38", RELEASE_NAME_UNFORGETTABLE_FIRE_ID)
-	            .values(RELEASE_GROUP_ACHTUNG_BABY_ID, "744c7a1b-ac79-35c4-bd92-7e2c6a24c8d8", RELEASE_NAME_ACHTUNG_BABY_ID)
-	            .values(RELEASE_GROUP_HOW_DISMANTLE_ATOMIC_BOMB_ID, "3ab33753-c16f-3e44-ae67-2fba4fd0e823", RELEASE_NAME_HOW_DISMANTLE_ATOMIC_BOMB_ID)
-	            .values(RELEASE_GROUP_RATTLE_HUM_ID, "bf965ead-7c91-3a9b-93c8-cf941242ee65", RELEASE_NAME_RATTLE_HUM_ID)
+	            .values(RELEASE_GROUP_WAR_ID, "c6b36664-7e60-3b3e-a24d-d096c67a11e9", "War")
+	            .values(RELEASE_GROUP_OCTOBER_ID, "87febb2c-e117-3a0d-a7f6-8fd9a6421af1", "October")
+	            .values(RELEASE_GROUP_CHILDREN_REVOLUTION_ID, "19b0ac91-f0eb-3ac9-8187-f602039e4090", "Children of the Revolution")
+	            .values(RELEASE_GROUP_BOY_ID, "53b0d89e-f856-3015-a3a6-a70e1e935fd6", "Boy")
+	            .values(RELEASE_GROUP_POP_ID, "5eca5ea6-841b-3835-b368-94fb71d8f932", "Pop")
+	            .values(RELEASE_GROUP_NO_LINE_HORIZON_ID, "acaa5e04-685c-3e47-af62-1cd3012008b6", "No Line on the Horizon")
+	            .values(RELEASE_GROUP_ZOOROPA_ID, "7c705df7-46e7-3c27-9693-72b3ea559c48", "Zooropa")
+	            .values(RELEASE_GROUP_JOSHUA_TREE_ID, "6f3e9fa6-be7a-3de8-a2b2-2072ece8a54d", "The Joshua Tree")
+	            .values(RELEASE_GROUP_ALL_CANT_LEAVE_BEHIND_ID, "88c59b55-200d-3ac1-beff-8eb99830807e", "All That You Can't Leave Behind")
+	            .values(RELEASE_GROUP_UNFORGETTABLE_FIRE_ID, "c84d00f4-afd3-3184-be62-6ae5f135aa38", "The Unforgettable Fire")
+	            .values(RELEASE_GROUP_ACHTUNG_BABY_ID, "744c7a1b-ac79-35c4-bd92-7e2c6a24c8d8", "Achtung Baby")
+	            .values(RELEASE_GROUP_HOW_DISMANTLE_ATOMIC_BOMB_ID, "3ab33753-c16f-3e44-ae67-2fba4fd0e823", "How to Dismantle an Atomic Bomb")
+	            .values(RELEASE_GROUP_RATTLE_HUM_ID, "bf965ead-7c91-3a9b-93c8-cf941242ee65", "Rattle and Hum")
 	            .build();
 	}
 	

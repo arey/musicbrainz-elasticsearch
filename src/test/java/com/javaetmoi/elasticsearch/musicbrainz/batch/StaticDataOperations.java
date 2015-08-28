@@ -74,10 +74,10 @@ public final class StaticDataOperations {
 	
 	public static final Insert AREA_ROWS =
 			insertInto("area")
-	                .columns("id", "gid", "name", "sort_name", "type")
-	                .values(AREA_IRELAND_ID, "390b05d4-11ec-3bce-a343-703a366b34a5", "Ireland", "Ireland", AREA_TYPE_COUNTRY)
-	                .values(221, "8a754a16-0027-3a29-b6d7-2b40ea0481ed", "United Kingdom", "United Kingdom", AREA_TYPE_COUNTRY)
-	                .values(222, "489ce91b-6658-3307-9877-795b68554c98", "United States", "United States", AREA_TYPE_COUNTRY)
+	                .columns("id", "gid", "name", "type")
+	                .values(AREA_IRELAND_ID, "390b05d4-11ec-3bce-a343-703a366b34a5", "Ireland", AREA_TYPE_COUNTRY)
+	                .values(221, "8a754a16-0027-3a29-b6d7-2b40ea0481ed", "United Kingdom", AREA_TYPE_COUNTRY)
+	                .values(222, "489ce91b-6658-3307-9877-795b68554c98", "United States", AREA_TYPE_COUNTRY)
 	                .build();
 	
 	public static final Insert GENDER_ROWS =

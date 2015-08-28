@@ -1,10 +1,9 @@
-CREATE TABLE annotation
-(
+CREATE TABLE annotation ( -- replicate (verbose)
     id                  SERIAL,
     editor              INTEGER NOT NULL, -- references editor.id
     text                TEXT,
     changelog           VARCHAR(255),
-    created             TIMESTAMP DEFAULT NOW()
+    created             TIMESTAMP DEFAULT NOW() 
 );
 
 CREATE TABLE application
@@ -17,47 +16,52 @@ CREATE TABLE application
     oauth_redirect_uri  TEXT
 );
 
-CREATE TABLE area_type (
+CREATE TABLE area_type ( -- replicate
     id                  SERIAL, -- PK
-    name                VARCHAR(255) NOT NULL
+    name                VARCHAR(255) NOT NULL,
+    parent              INTEGER, -- references area_type.id
+    child_order         INTEGER NOT NULL DEFAULT 0,
+    description         TEXT
 );
 
-CREATE TABLE area (
+CREATE TABLE area ( -- replicate (verbose)
     id                  SERIAL, -- PK
     gid                 uuid NOT NULL,
     name                VARCHAR NOT NULL,
-    sort_name           VARCHAR NOT NULL,
     type                INTEGER, -- references area_type.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >=0),
-    last_updated        TIMESTAMP DEFAULT NOW(),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
     begin_date_year     SMALLINT,
     begin_date_month    SMALLINT,
     begin_date_day      SMALLINT,
     end_date_year       SMALLINT,
     end_date_month      SMALLINT,
     end_date_day        SMALLINT,
-    ended               BOOLEAN NOT NULL DEFAULT FALSE
+    ended               BOOLEAN NOT NULL DEFAULT FALSE,
+    comment             VARCHAR(255) NOT NULL DEFAULT ''
 );
 
-CREATE TABLE area_gid_redirect
-(
+CREATE TABLE area_gid_redirect ( -- replicate (verbose)
     gid                 UUID NOT NULL, -- PK
     new_id              INTEGER NOT NULL, -- references area.id
-    created             TIMESTAMP DEFAULT NOW()
+    created             TIMESTAMP DEFAULT NOW() 
 );
 
-CREATE TABLE area_alias_type (
+CREATE TABLE area_alias_type ( -- replicate
     id SERIAL, -- PK,
-    name TEXT NOT NULL
+    name TEXT NOT NULL,
+    parent              INTEGER, -- references area_alias_type.id
+    child_order         INTEGER NOT NULL DEFAULT 0,
+    description         TEXT
 );
 
-CREATE TABLE area_alias (
+CREATE TABLE area_alias ( -- replicate (verbose)
     id                  SERIAL, --PK
     area                INTEGER NOT NULL, -- references area.id
     name                VARCHAR NOT NULL,
     locale              TEXT,
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >=0),
-    last_updated        TIMESTAMP DEFAULT NOW(),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
     type                INTEGER, -- references area_alias_type.id
     sort_name           VARCHAR NOT NULL,
     begin_date_year     SMALLINT,
@@ -67,19 +71,34 @@ CREATE TABLE area_alias (
     end_date_month      SMALLINT,
     end_date_day        SMALLINT,
     primary_for_locale  BOOLEAN NOT NULL DEFAULT false,
-             CONSTRAINT primary_check
+    ended               BOOLEAN NOT NULL DEFAULT FALSE,
+             CONSTRAINT primary_check1
                  CHECK ((locale IS NULL AND primary_for_locale IS FALSE) OR (locale IS NOT NULL)));
 
-CREATE TABLE area_annotation (
+CREATE TABLE area_annotation ( -- replicate (verbose)
     area        INTEGER NOT NULL, -- PK, references area.id
     annotation  INTEGER NOT NULL -- PK, references annotation.id
 );
 
-CREATE TABLE artist (
+CREATE TABLE area_tag ( -- replicate (verbose)
+    area                INTEGER NOT NULL, -- PK, references area.id
+    tag                 INTEGER NOT NULL, -- PK, references tag.id
+    count               INTEGER NOT NULL,
+    last_updated        TIMESTAMP DEFAULT NOW() 
+);
+
+CREATE TABLE area_tag_raw (
+    area                INTEGER NOT NULL, -- PK, references area.id
+    editor              INTEGER NOT NULL, -- PK, references editor.id
+    tag                 INTEGER NOT NULL, -- PK, references tag.id
+    is_upvote           BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+CREATE TABLE artist ( -- replicate (verbose)
     id                  SERIAL,
     gid                 UUID NOT NULL,
-    name                INTEGER NOT NULL, -- references artist_name.id
-    sort_name           INTEGER NOT NULL, -- references artist_name.id
+    name                VARCHAR NOT NULL,
+    sort_name           VARCHAR NOT NULL,
     begin_date_year     SMALLINT,
     begin_date_month    SMALLINT,
     begin_date_day      SMALLINT,
@@ -91,79 +110,77 @@ CREATE TABLE artist (
     gender              INTEGER, -- references gender.id
     comment             VARCHAR(255) NOT NULL DEFAULT '',
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW(),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
     ended               BOOLEAN NOT NULL DEFAULT FALSE,
-     begin_area          INTEGER, -- references area.id
+    begin_area          INTEGER, -- references area.id
     end_area            INTEGER -- references area.id
 );
 
 CREATE TABLE artist_deletion
 (
     gid UUID NOT NULL, -- PK
-    last_known_name INTEGER NOT NULL, -- references artist_name.id
+    last_known_name VARCHAR NOT NULL,
     last_known_comment TEXT NOT NULL,
-    deleted_at TIMESTAMP NOT NULL DEFAULT now()
+    deleted_at timestamp NOT NULL DEFAULT now()
 );
 
-CREATE TABLE artist_alias_type (
+CREATE TABLE artist_alias_type ( -- replicate
     id SERIAL,
-    name TEXT NOT NULL
+    name TEXT NOT NULL,
+    parent              INTEGER, -- references artist_alias_type.id
+    child_order         INTEGER NOT NULL DEFAULT 0,
+    description         TEXT
 );
 
-CREATE TABLE artist_alias
-(
+CREATE TABLE artist_alias ( -- replicate (verbose)
     id                  SERIAL,
     artist              INTEGER NOT NULL, -- references artist.id
-    name                INTEGER NOT NULL, -- references artist_name.id
+    name                VARCHAR NOT NULL,
     locale              TEXT,
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW(),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
     type                INTEGER, -- references artist_alias_type.id
-    sort_name           INTEGER NOT NULL, -- references artist_name.id
+    sort_name           VARCHAR NOT NULL,
     begin_date_year     SMALLINT,
     begin_date_month    SMALLINT,
     begin_date_day      SMALLINT,
     end_date_year       SMALLINT,
     end_date_month      SMALLINT,
     end_date_day        SMALLINT,
-    primary_for_locale  BOOLEAN NOT NULL DEFAULT false
+    primary_for_locale  BOOLEAN NOT NULL DEFAULT false,
+    ended               BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE artist_annotation
-(
+CREATE TABLE artist_annotation ( -- replicate (verbose)
     artist              INTEGER NOT NULL, -- PK, references artist.id
     annotation          INTEGER NOT NULL -- PK, references annotation.id
 );
 
-CREATE TABLE artist_ipi
-(
+CREATE TABLE artist_ipi ( -- replicate (verbose)
     artist              INTEGER NOT NULL, -- PK, references artist.id
     ipi                 CHAR(11) NOT NULL CHECK (ipi ~ E'^\\d{11}$'), -- PK
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    created             TIMESTAMP DEFAULT NOW()
+    created             TIMESTAMP DEFAULT NOW() 
 );
 
-CREATE TABLE artist_isni
-(
+CREATE TABLE artist_isni ( -- replicate (verbose)
     artist              INTEGER NOT NULL, -- PK, references artist.id
     isni                CHAR(16) NOT NULL CHECK (isni ~ E'^\\d{15}[\\dX]$'), -- PK
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    created             TIMESTAMP DEFAULT NOW()
+    created             TIMESTAMP DEFAULT NOW() 
 );
 
-CREATE TABLE artist_meta
-(
+CREATE TABLE artist_meta ( -- replicate
     id                  INTEGER NOT NULL, -- PK, references artist.id CASCADE
     rating              SMALLINT CHECK (rating >= 0 AND rating <= 100),
     rating_count        INTEGER
 );
 
-CREATE TABLE artist_tag
-(
+CREATE TABLE artist_tag ( -- replicate (verbose)
     artist              INTEGER NOT NULL, -- PK, references artist.id
     tag                 INTEGER NOT NULL, -- PK, references tag.id
     count               INTEGER NOT NULL,
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() 
 );
 
 CREATE TABLE artist_rating_raw
@@ -177,40 +194,38 @@ CREATE TABLE artist_tag_raw
 (
     artist              INTEGER NOT NULL, -- PK, references artist.id
     editor              INTEGER NOT NULL, -- PK, references editor.id
-    tag                 INTEGER NOT NULL -- PK, references tag.id
+    tag                 INTEGER NOT NULL, -- PK, references tag.id
+    is_upvote           BOOLEAN NOT NULL DEFAULT TRUE
 );
 
-CREATE TABLE artist_credit (
+CREATE TABLE artist_credit ( -- replicate
     id                  SERIAL,
-    name                INTEGER NOT NULL, -- references artist_name.id
+    name                VARCHAR NOT NULL,
     artist_count        SMALLINT NOT NULL,
     ref_count           INTEGER DEFAULT 0,
-    created             TIMESTAMP DEFAULT NOW()
+    created             TIMESTAMP DEFAULT NOW() 
 );
 
-CREATE TABLE artist_credit_name (
+CREATE TABLE artist_credit_name ( -- replicate (verbose)
     artist_credit       INTEGER NOT NULL, -- PK, references artist_credit.id CASCADE
     position            SMALLINT NOT NULL, -- PK
     artist              INTEGER NOT NULL, -- references artist.id CASCADE
-    name                INTEGER NOT NULL, -- references artist_name.id
+    name                VARCHAR NOT NULL,
     join_phrase         TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE artist_gid_redirect
-(
+CREATE TABLE artist_gid_redirect ( -- replicate (verbose)
     gid                 UUID NOT NULL, -- PK
     new_id              INTEGER NOT NULL, -- references artist.id
-    created             TIMESTAMP DEFAULT NOW()
+    created             TIMESTAMP DEFAULT NOW() 
 );
 
-CREATE TABLE artist_name (
+CREATE TABLE artist_type ( -- replicate
     id                  SERIAL,
-    name                VARCHAR NOT NULL
-);
-
-CREATE TABLE artist_type (
-    id                  SERIAL,
-    name                VARCHAR(255) NOT NULL
+    name                VARCHAR(255) NOT NULL,
+    parent              INTEGER, -- references artist_type.id
+    child_order         INTEGER NOT NULL DEFAULT 0,
+    description         TEXT
 );
 
 CREATE TABLE autoeditor_election
@@ -231,8 +246,8 @@ CREATE TABLE autoeditor_election
     yes_votes           INTEGER NOT NULL DEFAULT 0,
     no_votes            INTEGER NOT NULL DEFAULT 0,
     propose_time        TIMESTAMP NOT NULL DEFAULT NOW(),
-    open_time           TIMESTAMP ,
-    close_time          TIMESTAMP 
+    open_time           TIMESTAMP,
+    close_time          TIMESTAMP
 );
 
 CREATE TABLE autoeditor_election_vote
@@ -244,8 +259,7 @@ CREATE TABLE autoeditor_election_vote
     vote_time           TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE cdtoc
-(
+CREATE TABLE cdtoc ( -- replicate
     id                  SERIAL,
     discid              CHAR(28) NOT NULL,
     freedb_id           CHAR(8) NOT NULL,
@@ -253,12 +267,11 @@ CREATE TABLE cdtoc
     leadout_offset      INTEGER NOT NULL,
     track_offset        INTEGER NOT NULL, -- INTEGER[] => INTEGER for H2 ?
     degraded            BOOLEAN NOT NULL DEFAULT FALSE,
-    created             TIMESTAMP DEFAULT NOW()
+    created             TIMESTAMP DEFAULT NOW() 
 );
 
-CREATE TABLE cdtoc_raw
-(
-    id                  SERIAL,
+CREATE TABLE cdtoc_raw ( -- replicate
+    id                  SERIAL, -- PK
     release             INTEGER NOT NULL, -- references release_raw.id
     discid              CHAR(28) NOT NULL,
     track_count          INTEGER NOT NULL,
@@ -266,15 +279,7 @@ CREATE TABLE cdtoc_raw
     track_offset         INTEGER NOT NULL -- INTEGER[] => INTEGER for H2 ?
 );
 
-CREATE TABLE clientversion
-(
-    id                  SERIAL,
-    version             VARCHAR(64) NOT NULL,
-    created             TIMESTAMP DEFAULT NOW()
-);
-
-CREATE TABLE country_area
-(
+CREATE TABLE country_area ( -- replicate (verbose)
     area                INTEGER -- PK, references area.id
 );
 
@@ -288,10 +293,10 @@ CREATE TABLE edit
     yes_votes            INTEGER NOT NULL DEFAULT 0,
     no_votes             INTEGER NOT NULL DEFAULT 0,
     autoedit            SMALLINT NOT NULL DEFAULT 0,
-    open_time            TIMESTAMP DEFAULT NOW(),
-    close_time           TIMESTAMP ,
+    open_time            TIMESTAMP DEFAULT NOW() ,
+    close_time           TIMESTAMP,
     expire_time          TIMESTAMP NOT NULL,
-    language            INTEGER, -- references language
+    language            INTEGER, -- references language.id
     quality             SMALLINT NOT NULL DEFAULT 1
 );
 
@@ -301,7 +306,7 @@ CREATE TABLE edit_note
     editor              INTEGER NOT NULL, -- references editor.id
     edit                INTEGER NOT NULL, -- references edit.id
     text                TEXT NOT NULL,
-    post_time            TIMESTAMP DEFAULT NOW()
+    post_time            TIMESTAMP DEFAULT NOW() 
 );
 
 CREATE TABLE edit_area
@@ -317,11 +322,29 @@ CREATE TABLE edit_artist
     status              SMALLINT NOT NULL -- materialized from edit.status
 );
 
+CREATE TABLE edit_event
+(
+    edit                INTEGER NOT NULL, -- PK, references edit.id
+    event               INTEGER NOT NULL  -- PK, references event.id CASCADE
+);
+
+CREATE TABLE edit_instrument
+(
+    edit                INTEGER NOT NULL, -- PK, references edit.id
+    instrument          INTEGER NOT NULL  -- PK, references instrument.id CASCADE
+);
+
 CREATE TABLE edit_label
 (
     edit                INTEGER NOT NULL, -- PK, references edit.id
     label               INTEGER NOT NULL, -- PK, references label.id CASCADE
     status              SMALLINT NOT NULL -- materialized from edit.status
+);
+
+CREATE TABLE edit_place
+(
+    edit                INTEGER NOT NULL, -- PK, references edit.id
+    place               INTEGER NOT NULL  -- PK, references place.id CASCADE
 );
 
 CREATE TABLE edit_release
@@ -340,6 +363,12 @@ CREATE TABLE edit_recording
 (
     edit                INTEGER NOT NULL, -- PK, references edit.id
     recording           INTEGER NOT NULL  -- PK, references recording.id CASCADE
+);
+
+CREATE TABLE edit_series
+(
+    edit                INTEGER NOT NULL, -- PK, references edit.id
+    series              INTEGER NOT NULL  -- PK, references series.id CASCADE
 );
 
 CREATE TABLE edit_work
@@ -362,27 +391,26 @@ CREATE TABLE editor
     email               VARCHAR(64) DEFAULT NULL,
     website             VARCHAR(255) DEFAULT NULL,
     bio                 TEXT DEFAULT NULL,
-    member_since        TIMESTAMP DEFAULT NOW(),
-    email_confirm_date  TIMESTAMP ,
-    last_login_date     TIMESTAMP DEFAULT now(),
+    member_since        TIMESTAMP DEFAULT NOW() ,
+    email_confirm_date  TIMESTAMP,
+    last_login_date     TIMESTAMP DEFAULT NOW() ,
     edits_accepted      INTEGER DEFAULT 0,
     edits_rejected      INTEGER DEFAULT 0,
     auto_edits_accepted INTEGER DEFAULT 0,
     edits_failed        INTEGER DEFAULT 0,
-    last_updated        TIMESTAMP DEFAULT NOW(),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
     birth_date          DATE,
     gender              INTEGER, -- references gender.id
     area                INTEGER, -- references area.id
     password            VARCHAR(128) NOT NULL,
-    ha1                 CHAR(32) NOT NULL
+    ha1                 CHAR(32) NOT NULL,
+    deleted             BOOLEAN NOT NULL DEFAULT FALSE
 );
-
--- CREATE TYPE FLUENCY AS ENUM ('basic', 'intermediate', 'advanced', 'native'); H2 do not support Enum
 
 CREATE TABLE editor_language (
     editor   INTEGER NOT NULL,  -- PK, references editor.id
     language INTEGER NOT NULL,  -- PK, references language.id
-    fluency  VARCHAR NOT NULL   -- H2 do not support Enum => VARCHAR
+    fluency  VARCHAR NOT NULL
 );
 
 CREATE TABLE editor_preference
@@ -412,8 +440,8 @@ CREATE TABLE editor_subscribe_collection
 (
     id                  SERIAL,
     editor              INTEGER NOT NULL,              -- references editor.id
-    collection          INTEGER NOT NULL,              -- weakly references collection
-    last_edit_sent      INTEGER NOT NULL,              -- weakly references edit
+    collection          INTEGER NOT NULL,              -- weakly references editor_collection.id
+    last_edit_sent      INTEGER NOT NULL,              -- weakly references edit.id
     available           BOOLEAN NOT NULL DEFAULT TRUE,
     last_seen_name      VARCHAR(255)
 );
@@ -438,38 +466,218 @@ CREATE TABLE editor_subscribe_editor
     id                  SERIAL,
     editor              INTEGER NOT NULL, -- references editor.id (the one who has subscribed)
     subscribed_editor   INTEGER NOT NULL, -- references editor.id (the one being subscribed)
-    last_edit_sent      INTEGER NOT NULL  -- weakly references edit
+    last_edit_sent      INTEGER NOT NULL  -- weakly references edit.id
 );
 
-CREATE TABLE gender (
+CREATE TABLE editor_subscribe_series
+(
     id                  SERIAL,
-    name                VARCHAR(255) NOT NULL
+    editor              INTEGER NOT NULL, -- references editor.id
+    series              INTEGER NOT NULL, -- references series.id
+    last_edit_sent      INTEGER NOT NULL -- references edit.id
 );
 
-CREATE TABLE iso_3166_1 (
+CREATE TABLE editor_subscribe_series_deleted
+(
+    editor              INTEGER NOT NULL, -- PK, references editor.id
+    gid                 UUID NOT NULL, -- PK, references series_deletion.gid
+    deleted_by          INTEGER NOT NULL -- references edit.id
+);
+
+CREATE TABLE event ( -- replicate (verbose)
+    id                  SERIAL,
+    gid                 UUID NOT NULL,
+    name                VARCHAR NOT NULL,
+    begin_date_year     SMALLINT,
+    begin_date_month    SMALLINT,
+    begin_date_day      SMALLINT,
+    end_date_year       SMALLINT,
+    end_date_month      SMALLINT,
+    end_date_day        SMALLINT,
+    time                TIME,
+    type                INTEGER, -- references event_type.id
+    cancelled           BOOLEAN NOT NULL DEFAULT FALSE,
+    setlist             TEXT,
+    comment             VARCHAR(255) NOT NULL DEFAULT '',
+    edits_pending       INTEGER NOT NULL DEFAULT 0,
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    ended               BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+CREATE TABLE event_meta ( -- replicate
+    id                  INTEGER NOT NULL, -- PK, references event.id CASCADE
+    rating              SMALLINT CHECK (rating >= 0 AND rating <= 100),
+    rating_count        INTEGER
+);
+
+CREATE TABLE event_rating_raw (
+    event               INTEGER NOT NULL, -- PK, references event.id
+    editor              INTEGER NOT NULL, -- PK, references editor.id
+    rating              SMALLINT NOT NULL CHECK (rating >= 0 AND rating <= 100)
+);
+
+CREATE TABLE event_tag_raw (
+    event               INTEGER NOT NULL, -- PK, references event.id
+    editor              INTEGER NOT NULL, -- PK, references editor.id
+    tag                 INTEGER NOT NULL, -- PK, references tag.id
+    is_upvote           BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+CREATE TABLE event_alias_type ( -- replicate
+    id SERIAL,
+    name TEXT NOT NULL,
+    parent              INTEGER, -- references event_alias_type.id
+    child_order         INTEGER NOT NULL DEFAULT 0,
+    description         TEXT
+);
+
+CREATE TABLE event_alias ( -- replicate (verbose)
+    id                  SERIAL,
+    event               INTEGER NOT NULL, -- references event.id
+    name                VARCHAR NOT NULL,
+    locale              TEXT,
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    type                INTEGER, -- references event_alias_type.id
+    sort_name           VARCHAR NOT NULL,
+    begin_date_year     SMALLINT,
+    begin_date_month    SMALLINT,
+    begin_date_day      SMALLINT,
+    end_date_year       SMALLINT,
+    end_date_month      SMALLINT,
+    end_date_day        SMALLINT,
+    primary_for_locale  BOOLEAN NOT NULL DEFAULT false,
+    ended               BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+CREATE TABLE event_annotation ( -- replicate (verbose)
+    event               INTEGER NOT NULL, -- PK, references event.id
+    annotation          INTEGER NOT NULL -- PK, references annotation.id
+);
+
+CREATE TABLE event_gid_redirect ( -- replicate (verbose)
+    gid                 UUID NOT NULL, -- PK
+    new_id              INTEGER NOT NULL, -- references event.id
+    created             TIMESTAMP DEFAULT NOW() 
+);
+
+CREATE TABLE event_tag ( -- replicate (verbose)
+    event               INTEGER NOT NULL, -- PK, references event.id
+    tag                 INTEGER NOT NULL, -- PK, references tag.id
+    count               INTEGER NOT NULL,
+    last_updated        TIMESTAMP DEFAULT NOW() 
+);
+
+CREATE TABLE event_type ( -- replicate
+    id                  SERIAL,
+    name                VARCHAR(255) NOT NULL,
+    parent              INTEGER, -- references event_type.id
+    child_order         INTEGER NOT NULL DEFAULT 0,
+    description         TEXT
+);
+
+CREATE TABLE gender ( -- replicate
+    id                  SERIAL,
+    name                VARCHAR(255) NOT NULL,
+    parent              INTEGER, -- references gender.id
+    child_order         INTEGER NOT NULL DEFAULT 0,
+    description         TEXT
+);
+
+CREATE TABLE instrument_type ( -- replicate
+    id                  SERIAL, -- PK
+    name                VARCHAR(255) NOT NULL,
+    parent              INTEGER, -- references instrument_type.id
+    child_order         INTEGER NOT NULL DEFAULT 0,
+    description         TEXT
+);
+
+CREATE TABLE instrument ( -- replicate (verbose)
+    id                  SERIAL, -- PK
+    gid                 uuid NOT NULL,
+    name                VARCHAR NOT NULL,
+    type                INTEGER, -- references instrument_type.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >=0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    comment             VARCHAR(255) NOT NULL DEFAULT '',
+    description         TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE instrument_gid_redirect ( -- replicate (verbose)
+    gid                 UUID NOT NULL, -- PK
+    new_id              INTEGER NOT NULL, -- references instrument.id
+    created             TIMESTAMP DEFAULT NOW() 
+);
+
+CREATE TABLE instrument_alias_type ( -- replicate
+    id SERIAL, -- PK,
+    name TEXT NOT NULL,
+    parent              INTEGER, -- references instrument_alias_type.id
+    child_order         INTEGER NOT NULL DEFAULT 0,
+    description         TEXT
+);
+
+CREATE TABLE instrument_alias ( -- replicate (verbose)
+    id                  SERIAL, --PK
+    instrument          INTEGER NOT NULL, -- references instrument.id
+    name                VARCHAR NOT NULL,
+    locale              TEXT,
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >=0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    type                INTEGER, -- references instrument_alias_type.id
+    sort_name           VARCHAR NOT NULL,
+    begin_date_year     SMALLINT,
+    begin_date_month    SMALLINT,
+    begin_date_day      SMALLINT,
+    end_date_year       SMALLINT,
+    end_date_month      SMALLINT,
+    end_date_day        SMALLINT,
+    primary_for_locale  BOOLEAN NOT NULL DEFAULT false,
+    ended               BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+CREATE TABLE instrument_annotation ( -- replicate (verbose)
+    instrument  INTEGER NOT NULL, -- PK, references instrument.id
+    annotation  INTEGER NOT NULL -- PK, references annotation.id
+);
+
+CREATE TABLE instrument_tag ( -- replicate (verbose)
+    instrument          INTEGER NOT NULL, -- PK, references instrument.id
+    tag                 INTEGER NOT NULL, -- PK, references tag.id
+    count               INTEGER NOT NULL,
+    last_updated        TIMESTAMP DEFAULT NOW() 
+);
+
+CREATE TABLE instrument_tag_raw (
+    instrument          INTEGER NOT NULL, -- PK, references instrument.id
+    editor              INTEGER NOT NULL, -- PK, references editor.id
+    tag                 INTEGER NOT NULL, -- PK, references tag.id
+    is_upvote           BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+CREATE TABLE iso_3166_1 ( -- replicate
     area      INTEGER NOT NULL, -- references area.id
     code      CHAR(2) -- PK
 );
-CREATE TABLE iso_3166_2 (
+CREATE TABLE iso_3166_2 ( -- replicate
     area      INTEGER NOT NULL, -- references area.id
     code      VARCHAR(10) -- PK
 );
-CREATE TABLE iso_3166_3 (
+CREATE TABLE iso_3166_3 ( -- replicate
     area      INTEGER NOT NULL, -- references area.id
     code      CHAR(4) -- PK
 );
 
-CREATE TABLE isrc
-(
+CREATE TABLE isrc ( -- replicate (verbose)
     id                  SERIAL,
     recording           INTEGER NOT NULL, -- references recording.id
     isrc                CHAR(12) NOT NULL CHECK (isrc ~ E'^[A-Z]{2}[A-Z0-9]{3}[0-9]{7}$'),
     source              SMALLINT,
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    created             TIMESTAMP DEFAULT NOW()
+    created             TIMESTAMP DEFAULT NOW() 
 );
 
-CREATE TABLE iswc (
+CREATE TABLE iswc ( -- replicate (verbose)
     id SERIAL NOT NULL,
     work INTEGER NOT NULL, -- references work.id
     iswc CHARACTER(15) CHECK (iswc ~ E'^T-?\\d{3}.?\\d{3}.?\\d{3}[-.]?\\d$'),
@@ -478,371 +686,946 @@ CREATE TABLE iswc (
     created TIMESTAMP NOT NULL DEFAULT now()
 );
 
-CREATE TABLE l_area_area
-(
+CREATE TABLE l_area_area ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references area.id
     entity1             INTEGER NOT NULL, -- references area.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_area_artist
-(
+CREATE TABLE l_area_artist ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references area.id
     entity1             INTEGER NOT NULL, -- references artist.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_area_label
-(
+CREATE TABLE l_area_event ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references area.id
+    entity1             INTEGER NOT NULL, -- references event.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_area_instrument ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references area.id
+    entity1             INTEGER NOT NULL, -- references instrument.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_area_label ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references area.id
     entity1             INTEGER NOT NULL, -- references label.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_area_work
-(
+CREATE TABLE l_area_place ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references area.id
-    entity1             INTEGER NOT NULL, -- references work.id
+    entity1             INTEGER NOT NULL, -- references place.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_area_url
-(
-    id                  SERIAL,
-    link                INTEGER NOT NULL, -- references link.id
-    entity0             INTEGER NOT NULL, -- references area.id
-    entity1             INTEGER NOT NULL, -- references url.id
-    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
-);
-
-CREATE TABLE l_area_recording
-(
+CREATE TABLE l_area_recording ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references area.id
     entity1             INTEGER NOT NULL, -- references recording.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_area_release_group
-(
-    id                  SERIAL,
-    link                INTEGER NOT NULL, -- references link.id
-    entity0             INTEGER NOT NULL, -- references area.id
-    entity1             INTEGER NOT NULL, -- references release_group.id
-    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
-);
-
-CREATE TABLE l_area_release
-(
+CREATE TABLE l_area_release ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references area.id
     entity1             INTEGER NOT NULL, -- references release.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_artist_artist
-(
+CREATE TABLE l_area_release_group ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references area.id
+    entity1             INTEGER NOT NULL, -- references release_group.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_area_series ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references area.id
+    entity1             INTEGER NOT NULL, -- references series.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_area_url ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references area.id
+    entity1             INTEGER NOT NULL, -- references url.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_area_work ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references area.id
+    entity1             INTEGER NOT NULL, -- references work.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_artist_artist ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references artist.id
     entity1             INTEGER NOT NULL, -- references artist.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_artist_label
-(
+CREATE TABLE l_artist_event ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references artist.id
+    entity1             INTEGER NOT NULL, -- references event.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_artist_instrument ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references artist.id
+    entity1             INTEGER NOT NULL, -- references instrument.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_artist_label ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references artist.id
     entity1             INTEGER NOT NULL, -- references label.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_artist_recording
-(
+CREATE TABLE l_artist_place ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references artist.id
+    entity1             INTEGER NOT NULL, -- references place.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_artist_recording ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references artist.id
     entity1             INTEGER NOT NULL, -- references recording.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_artist_release
-(
+CREATE TABLE l_artist_release ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references artist.id
     entity1             INTEGER NOT NULL, -- references release.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_artist_release_group
-(
+CREATE TABLE l_artist_release_group ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references artist.id
     entity1             INTEGER NOT NULL, -- references release_group.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_artist_url
-(
+CREATE TABLE l_artist_series ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references artist.id
+    entity1             INTEGER NOT NULL, -- references series.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_artist_url ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references artist.id
     entity1             INTEGER NOT NULL, -- references url.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_artist_work
-(
+CREATE TABLE l_artist_work ( -- replicate (verbose)
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references artist.id
     entity1             INTEGER NOT NULL, -- references work.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_label_label
-(
+CREATE TABLE l_event_event ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references event.id
+    entity1             INTEGER NOT NULL, -- references event.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_event_instrument ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references event.id
+    entity1             INTEGER NOT NULL, -- references instrument.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_event_label ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references event.id
+    entity1             INTEGER NOT NULL, -- references label.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_event_place ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references event.id
+    entity1             INTEGER NOT NULL, -- references place.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_event_recording ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references event.id
+    entity1             INTEGER NOT NULL, -- references recording.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_event_release ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references event.id
+    entity1             INTEGER NOT NULL, -- references release.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_event_release_group ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references event.id
+    entity1             INTEGER NOT NULL, -- references release_group.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_event_series ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references event.id
+    entity1             INTEGER NOT NULL, -- references series.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_event_url ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references event.id
+    entity1             INTEGER NOT NULL, -- references url.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_event_work ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references event.id
+    entity1             INTEGER NOT NULL, -- references work.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_label_label ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references label.id
     entity1             INTEGER NOT NULL, -- references label.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_label_recording
-(
+CREATE TABLE l_instrument_instrument ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references instrument.id
+    entity1             INTEGER NOT NULL, -- references instrument.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_instrument_label ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references instrument.id
+    entity1             INTEGER NOT NULL, -- references label.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_instrument_place ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references instrument.id
+    entity1             INTEGER NOT NULL, -- references place.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_instrument_recording ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references instrument.id
+    entity1             INTEGER NOT NULL, -- references recording.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_instrument_release ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references instrument.id
+    entity1             INTEGER NOT NULL, -- references release.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_instrument_release_group ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references instrument.id
+    entity1             INTEGER NOT NULL, -- references release_group.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_instrument_series ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references instrument.id
+    entity1             INTEGER NOT NULL, -- references series.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_instrument_url ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references instrument.id
+    entity1             INTEGER NOT NULL, -- references url.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_instrument_work ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references instrument.id
+    entity1             INTEGER NOT NULL, -- references work.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_label_place ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references label.id
+    entity1             INTEGER NOT NULL, -- references place.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_label_recording ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references label.id
     entity1             INTEGER NOT NULL, -- references recording.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_label_release
-(
+CREATE TABLE l_label_release ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references label.id
     entity1             INTEGER NOT NULL, -- references release.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_label_release_group
-(
+CREATE TABLE l_label_release_group ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references label.id
     entity1             INTEGER NOT NULL, -- references release_group.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_label_url
-(
+CREATE TABLE l_label_series ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references label.id
+    entity1             INTEGER NOT NULL, -- references series.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_label_url ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references label.id
     entity1             INTEGER NOT NULL, -- references url.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_label_work
-(
+CREATE TABLE l_label_work ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references label.id
     entity1             INTEGER NOT NULL, -- references work.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_recording_recording
-(
+CREATE TABLE l_place_place ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references place.id
+    entity1             INTEGER NOT NULL, -- references place.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_place_recording ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references place.id
+    entity1             INTEGER NOT NULL, -- references recording.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_place_release ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references place.id
+    entity1             INTEGER NOT NULL, -- references release.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_place_release_group ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references place.id
+    entity1             INTEGER NOT NULL, -- references release_group.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_place_series ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references place.id
+    entity1             INTEGER NOT NULL, -- references series.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_place_url ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references place.id
+    entity1             INTEGER NOT NULL, -- references url.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_place_work ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references place.id
+    entity1             INTEGER NOT NULL, -- references work.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_recording_recording ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references recording.id
     entity1             INTEGER NOT NULL, -- references recording.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_recording_release
-(
+CREATE TABLE l_recording_release ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references recording.id
     entity1             INTEGER NOT NULL, -- references release.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_recording_release_group
-(
+CREATE TABLE l_recording_release_group ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references recording.id
     entity1             INTEGER NOT NULL, -- references release_group.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_recording_url
-(
+CREATE TABLE l_recording_series ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references recording.id
+    entity1             INTEGER NOT NULL, -- references series.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_recording_url ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references recording.id
     entity1             INTEGER NOT NULL, -- references url.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_recording_work
-(
+CREATE TABLE l_recording_work ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references recording.id
     entity1             INTEGER NOT NULL, -- references work.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_release_release
-(
+CREATE TABLE l_release_release ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references release.id
     entity1             INTEGER NOT NULL, -- references release.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_release_release_group
-(
+CREATE TABLE l_release_release_group ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references release.id
     entity1             INTEGER NOT NULL, -- references release_group.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_release_url
-(
+CREATE TABLE l_release_series ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references release.id
+    entity1             INTEGER NOT NULL, -- references series.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_release_url ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references release.id
     entity1             INTEGER NOT NULL, -- references url.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_release_work
-(
+CREATE TABLE l_release_work ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references release.id
     entity1             INTEGER NOT NULL, -- references work.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_release_group_release_group
-(
+CREATE TABLE l_release_group_release_group ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references release_group.id
     entity1             INTEGER NOT NULL, -- references release_group.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_release_group_url
-(
+CREATE TABLE l_release_group_series ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references release_group.id
+    entity1             INTEGER NOT NULL, -- references series.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_release_group_url ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references release_group.id
     entity1             INTEGER NOT NULL, -- references url.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_release_group_work
-(
+CREATE TABLE l_release_group_work ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references release_group.id
     entity1             INTEGER NOT NULL, -- references work.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_url_url
-(
+CREATE TABLE l_series_series ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references series.id
+    entity1             INTEGER NOT NULL, -- references series.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_series_url ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references series.id
+    entity1             INTEGER NOT NULL, -- references url.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_series_work ( -- replicate
+    id                  SERIAL,
+    link                INTEGER NOT NULL, -- references link.id
+    entity0             INTEGER NOT NULL, -- references series.id
+    entity1             INTEGER NOT NULL, -- references work.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE l_url_url ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references url.id
     entity1             INTEGER NOT NULL, -- references url.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_url_work
-(
+CREATE TABLE l_url_work ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references url.id
     entity1             INTEGER NOT NULL, -- references work.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE l_work_work
-(
+CREATE TABLE l_work_work ( -- replicate
     id                  SERIAL,
     link                INTEGER NOT NULL, -- references link.id
     entity0             INTEGER NOT NULL, -- references work.id
     entity1             INTEGER NOT NULL, -- references work.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    link_order          INTEGER NOT NULL DEFAULT 0 CHECK (link_order >= 0),
+    entity0_credit      TEXT NOT NULL DEFAULT '',
+    entity1_credit      TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE label (
+CREATE TABLE label ( -- replicate (verbose)
     id                  SERIAL,
     gid                 UUID NOT NULL,
-    name                INTEGER NOT NULL, -- references label_name.id
-    sort_name           INTEGER NOT NULL, -- references label_name.id
+    name                VARCHAR NOT NULL,
     begin_date_year     SMALLINT,
     begin_date_month    SMALLINT,
     begin_date_day      SMALLINT,
@@ -854,16 +1637,16 @@ CREATE TABLE label (
     area                INTEGER, -- references area.id
     comment             VARCHAR(255) NOT NULL DEFAULT '',
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW(),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
     ended               BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE label_deletion
 (
     gid UUID NOT NULL, -- PK
-    last_known_name INTEGER NOT NULL, -- references label_name.id
+    last_known_name VARCHAR NOT NULL,
     last_known_comment TEXT NOT NULL,
-    deleted_at TIMESTAMP NOT NULL DEFAULT now()
+    deleted_at timestamp NOT NULL DEFAULT now()
 );
 
 CREATE TABLE label_rating_raw
@@ -877,89 +1660,84 @@ CREATE TABLE label_tag_raw
 (
     label               INTEGER NOT NULL, -- PK, references label.id
     editor              INTEGER NOT NULL, -- PK, references editor.id
-    tag                 INTEGER NOT NULL -- PK, references tag.id
+    tag                 INTEGER NOT NULL, -- PK, references tag.id
+    is_upvote           BOOLEAN NOT NULL DEFAULT TRUE
 );
 
-CREATE TABLE label_alias_type (
+CREATE TABLE label_alias_type ( -- replicate
     id SERIAL,
-    name TEXT NOT NULL
+    name TEXT NOT NULL,
+    parent              INTEGER, -- references label_alias_type.id
+    child_order         INTEGER NOT NULL DEFAULT 0,
+    description         TEXT
 );
 
-CREATE TABLE label_alias
-(
+CREATE TABLE label_alias ( -- replicate (verbose)
     id                  SERIAL,
     label               INTEGER NOT NULL, -- references label.id
-    name                INTEGER NOT NULL, -- references label_name.id
+    name                VARCHAR NOT NULL,
     locale              TEXT,
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW(),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
     type                INTEGER, -- references label_alias_type.id
-    sort_name           INTEGER NOT NULL, -- references label_name.id
+    sort_name           VARCHAR NOT NULL,
     begin_date_year     SMALLINT,
     begin_date_month    SMALLINT,
     begin_date_day      SMALLINT,
     end_date_year       SMALLINT,
     end_date_month      SMALLINT,
     end_date_day        SMALLINT,
-    primary_for_locale  BOOLEAN NOT NULL DEFAULT false
+    primary_for_locale  BOOLEAN NOT NULL DEFAULT false,
+    ended               BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE label_annotation
-(
+CREATE TABLE label_annotation ( -- replicate (verbose)
     label               INTEGER NOT NULL, -- PK, references label.id
     annotation          INTEGER NOT NULL -- PK, references annotation.id
 );
 
-CREATE TABLE label_ipi
-(
+CREATE TABLE label_ipi ( -- replicate (verbose)
     label               INTEGER NOT NULL, -- PK, references label.id
     ipi                 CHAR(11) NOT NULL CHECK (ipi ~ E'^\\d{11}$'), -- PK
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    created             TIMESTAMP DEFAULT NOW()
+    created             TIMESTAMP DEFAULT NOW() 
 );
 
-CREATE TABLE label_isni
-(
+CREATE TABLE label_isni ( -- replicate (verbose)
     label               INTEGER NOT NULL, -- PK, references label.id
     isni                CHAR(16) NOT NULL CHECK (isni ~ E'^\\d{15}[\\dX]$'), -- PK
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    created             TIMESTAMP DEFAULT NOW()
+    created             TIMESTAMP DEFAULT NOW() 
 );
 
-CREATE TABLE label_meta
-(
+CREATE TABLE label_meta ( -- replicate
     id                  INTEGER NOT NULL, -- PK, references label.id CASCADE
     rating              SMALLINT CHECK (rating >= 0 AND rating <= 100),
     rating_count        INTEGER
 );
 
-CREATE TABLE label_gid_redirect
-(
+CREATE TABLE label_gid_redirect ( -- replicate (verbose)
     gid                 UUID NOT NULL, -- PK
     new_id              INTEGER NOT NULL, -- references label.id
-    created             TIMESTAMP DEFAULT NOW()
+    created             TIMESTAMP DEFAULT NOW() 
 );
 
-CREATE TABLE label_name (
-    id                  SERIAL,
-    name                VARCHAR NOT NULL
-);
-
-CREATE TABLE label_tag
-(
+CREATE TABLE label_tag ( -- replicate (verbose)
     label               INTEGER NOT NULL, -- PK, references label.id
     tag                 INTEGER NOT NULL, -- PK, references tag.id
     count               INTEGER NOT NULL,
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() 
 );
 
-CREATE TABLE label_type (
+CREATE TABLE label_type ( -- replicate
     id                  SERIAL,
-    name                VARCHAR(255) NOT NULL
+    name                VARCHAR(255) NOT NULL,
+    parent              INTEGER, -- references label_type.id
+    child_order         INTEGER NOT NULL DEFAULT 0,
+    description         TEXT
 );
 
-CREATE TABLE language
-(
+CREATE TABLE language ( -- replicate
     id                  SERIAL,
     iso_code_2t         CHAR(3), -- ISO 639-2 (T)
     iso_code_2b         CHAR(3), -- ISO 639-2 (B)
@@ -973,8 +1751,7 @@ ALTER TABLE language
       ADD CONSTRAINT iso_code_check
       CHECK (iso_code_2t IS NOT NULL OR iso_code_3  IS NOT NULL);
 
-CREATE TABLE link
-(
+CREATE TABLE link ( -- replicate
     id                  SERIAL,
     link_type           INTEGER NOT NULL, -- references link_type.id
     begin_date_year     SMALLINT,
@@ -984,19 +1761,17 @@ CREATE TABLE link
     end_date_month      SMALLINT,
     end_date_day        SMALLINT,
     attribute_count     INTEGER NOT NULL DEFAULT 0,
-    created             TIMESTAMP DEFAULT NOW(),
+    created             TIMESTAMP DEFAULT NOW() ,
     ended               BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE link_attribute
-(
+CREATE TABLE link_attribute ( -- replicate
     link                INTEGER NOT NULL, -- PK, references link.id
     attribute_type      INTEGER NOT NULL, -- PK, references link_attribute_type.id
-    created             TIMESTAMP DEFAULT NOW()
+    created             TIMESTAMP DEFAULT NOW() 
 );
 
-CREATE TABLE link_attribute_type
-(
+CREATE TABLE link_attribute_type ( -- replicate
     id                  SERIAL,
     parent              INTEGER, -- references link_attribute_type.id
     root                INTEGER NOT NULL, -- references link_attribute_type.id
@@ -1004,21 +1779,30 @@ CREATE TABLE link_attribute_type
     gid                 UUID NOT NULL,
     name                VARCHAR(255) NOT NULL,
     description         TEXT,
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() 
 );
 
-CREATE TABLE link_creditable_attribute_type (
+CREATE TABLE link_creditable_attribute_type ( -- replicate
   attribute_type INT NOT NULL -- PK, references link_attribute_type.id CASCADE
 );
 
-CREATE TABLE link_attribute_credit (
+CREATE TABLE link_attribute_credit ( -- replicate
   link INT NOT NULL, -- PK, references link.id
   attribute_type INT NOT NULL, -- PK, references link_creditable_attribute_type.attribute_type
   credited_as TEXT NOT NULL
 );
 
-CREATE TABLE link_type
-(
+CREATE TABLE link_text_attribute_type ( -- replicate
+    attribute_type      INT NOT NULL -- PK, references link_attribute_type.id CASCADE
+);
+
+CREATE TABLE link_attribute_text_value ( -- replicate
+    link                INT NOT NULL, -- PK, references link.id
+    attribute_type      INT NOT NULL, -- PK, references link_text_attribute_type.attribute_type
+    text_value          TEXT NOT NULL
+);
+
+CREATE TABLE link_type ( -- replicate
     id                  SERIAL,
     parent              INTEGER, -- references link_type.id
     child_order         INTEGER NOT NULL DEFAULT 0,
@@ -1031,16 +1815,19 @@ CREATE TABLE link_type
     reverse_link_phrase VARCHAR(255) NOT NULL,
     long_link_phrase    VARCHAR(255) NOT NULL,
     priority            INTEGER NOT NULL DEFAULT 0,
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    is_deprecated       BOOLEAN NOT NULL DEFAULT false,
+    has_dates           BOOLEAN NOT NULL DEFAULT true,
+    entity0_cardinality INTEGER NOT NULL DEFAULT 0,
+    entity1_cardinality INTEGER NOT NULL DEFAULT 0
 );
 
-CREATE TABLE link_type_attribute_type
-(
+CREATE TABLE link_type_attribute_type ( -- replicate
     link_type           INTEGER NOT NULL, -- PK, references link_type.id
     attribute_type      INTEGER NOT NULL, -- PK, references link_attribute_type.id
     min                 SMALLINT,
     max                 SMALLINT,
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() 
 );
 
 CREATE TABLE editor_collection
@@ -1050,13 +1837,72 @@ CREATE TABLE editor_collection
     editor              INTEGER NOT NULL, -- references editor.id
     name                VARCHAR NOT NULL,
     public              BOOLEAN NOT NULL DEFAULT FALSE,
-    description         TEXT DEFAULT '' NOT NULL
+    description         TEXT DEFAULT '' NOT NULL,
+    type                INTEGER NOT NULL -- references editor_collection_type.id
 );
 
-CREATE TABLE editor_collection_release
-(
-    collection          INTEGER NOT NULL, -- PK, references editor_collection.id
-    release             INTEGER NOT NULL -- PK, references release.id
+CREATE TABLE editor_collection_type ( -- replicate
+    id                  SERIAL,
+    name                VARCHAR(255) NOT NULL,
+    entity_type         VARCHAR(50) NOT NULL,
+    parent              INTEGER, -- references editor_collection_type.id
+    child_order         INTEGER NOT NULL DEFAULT 0,
+    description         TEXT
+);
+
+CREATE TABLE editor_collection_area (
+    collection INTEGER NOT NULL, -- PK, references editor_collection.id
+    area INTEGER NOT NULL -- PK, references area.id
+);
+
+CREATE TABLE editor_collection_artist (
+    collection INTEGER NOT NULL, -- PK, references editor_collection.id
+    artist INTEGER NOT NULL -- PK, references artist.id
+);
+
+CREATE TABLE editor_collection_event (
+    collection INTEGER NOT NULL, -- PK, references editor_collection.id
+    event INTEGER NOT NULL -- PK, references event.id
+);
+
+CREATE TABLE editor_collection_instrument (
+    collection INTEGER NOT NULL, -- PK, references editor_collection.id
+    instrument INTEGER NOT NULL -- PK, references instrument.id
+);
+
+CREATE TABLE editor_collection_label (
+    collection INTEGER NOT NULL, -- PK, references editor_collection.id
+    label INTEGER NOT NULL -- PK, references label.id
+);
+
+CREATE TABLE editor_collection_place (
+    collection INTEGER NOT NULL, -- PK, references editor_collection.id
+    place INTEGER NOT NULL -- PK, references place.id
+);
+
+CREATE TABLE editor_collection_recording (
+    collection INTEGER NOT NULL, -- PK, references editor_collection.id
+    recording INTEGER NOT NULL -- PK, references recording.id
+);
+
+CREATE TABLE editor_collection_release (
+    collection INTEGER NOT NULL, -- PK, references editor_collection.id
+    release INTEGER NOT NULL -- PK, references release.id
+);
+
+CREATE TABLE editor_collection_release_group (
+    collection INTEGER NOT NULL, -- PK, references editor_collection.id
+    release_group INTEGER NOT NULL -- PK, references release_group.id
+);
+
+CREATE TABLE editor_collection_series (
+    collection INTEGER NOT NULL, -- PK, references editor_collection.id
+    series INTEGER NOT NULL -- PK, references series.id
+);
+
+CREATE TABLE editor_collection_work (
+    collection INTEGER NOT NULL, -- PK, references editor_collection.id
+    work INTEGER NOT NULL -- PK, references work.id
 );
 
 CREATE TABLE editor_oauth_token
@@ -1067,8 +1913,6 @@ CREATE TABLE editor_oauth_token
     authorization_code  TEXT,
     refresh_token       TEXT,
     access_token        TEXT,
-    mac_key             TEXT,
-    mac_time_diff       INTEGER,
     expire_time         TIMESTAMP NOT NULL,
     scope               INTEGER NOT NULL DEFAULT 0,
     granted             TIMESTAMP NOT NULL DEFAULT NOW()
@@ -1078,7 +1922,7 @@ CREATE TABLE editor_watch_preferences
 (
     editor INTEGER NOT NULL, -- PK, references editor.id CASCADE
     notify_via_email BOOLEAN NOT NULL DEFAULT TRUE,
-    notification_timeframe VARCHAR NOT NULL DEFAULT '1 week', -- H2 do not support INTERVAL => VARCHAR
+    notification_timeframe VARCHAR NOT NULL DEFAULT '1 week',
     last_checked TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
@@ -1100,62 +1944,167 @@ CREATE TABLE editor_watch_release_status
     release_status INTEGER NOT NULL -- PK, references release_status.id
 );
 
-CREATE TABLE medium
-(
+CREATE TABLE medium ( -- replicate (verbose)
     id                  SERIAL,
     release             INTEGER NOT NULL, -- references release.id
     position            INTEGER NOT NULL,
     format              INTEGER, -- references medium_format.id
-    name                VARCHAR(255),
+    name                VARCHAR NOT NULL DEFAULT '',
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW(),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
     track_count         INTEGER NOT NULL DEFAULT 0
 );
 
-CREATE TABLE medium_cdtoc
-(
+CREATE TABLE medium_cdtoc ( -- replicate (verbose)
     id                  SERIAL,
     medium              INTEGER NOT NULL, -- references medium.id
     cdtoc               INTEGER NOT NULL, -- references cdtoc.id
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() 
 );
 
-CREATE TABLE medium_format
-(
+CREATE TABLE medium_format ( -- replicate
     id                  SERIAL,
     name                VARCHAR(100) NOT NULL,
     parent              INTEGER, -- references medium_format.id
     child_order         INTEGER NOT NULL DEFAULT 0,
     year                SMALLINT,
-    has_discids         BOOLEAN NOT NULL DEFAULT FALSE
+    has_discids         BOOLEAN NOT NULL DEFAULT FALSE,
+    description         TEXT
 );
 
-CREATE TABLE puid
-(
+CREATE TABLE orderable_link_type ( -- replicate
+    link_type           INTEGER NOT NULL, -- PK, references link_type.id
+    direction           SMALLINT NOT NULL DEFAULT 1 CHECK (direction = 1 OR direction = 2)
+);
+
+CREATE TABLE place ( -- replicate (verbose)
+    id                  SERIAL, -- PK
+    gid                 uuid NOT NULL,
+    name                VARCHAR NOT NULL,
+    type                INTEGER, -- references place_type.id
+    address             VARCHAR NOT NULL DEFAULT '',
+    area                INTEGER, -- references area.id
+    coordinates         VARCHAR ,
+    comment             VARCHAR(255) NOT NULL DEFAULT '',
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >=0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    begin_date_year     SMALLINT,
+    begin_date_month    SMALLINT,
+    begin_date_day      SMALLINT,
+    end_date_year       SMALLINT,
+    end_date_month      SMALLINT,
+    end_date_day        SMALLINT,
+    ended               BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+CREATE TABLE place_alias ( -- replicate (verbose)
     id                  SERIAL,
-    puid                CHAR(36) NOT NULL,
-    version             INTEGER NOT NULL -- references clientversion.id
+    place               INTEGER NOT NULL, -- references place.id
+    name                VARCHAR NOT NULL,
+    locale              TEXT,
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    type                INTEGER, -- references place_alias_type.id
+    sort_name           VARCHAR NOT NULL,
+    begin_date_year     SMALLINT,
+    begin_date_month    SMALLINT,
+    begin_date_day      SMALLINT,
+    end_date_year       SMALLINT,
+    end_date_month      SMALLINT,
+    end_date_day        SMALLINT,
+    primary_for_locale  BOOLEAN NOT NULL DEFAULT false,
+    ended               BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE replication_control
+CREATE TABLE place_alias_type ( -- replicate
+    id SERIAL,
+    name TEXT NOT NULL,
+    parent              INTEGER, -- references place_alias_type.id
+    child_order         INTEGER NOT NULL DEFAULT 0,
+    description         TEXT
+);
+
+CREATE TABLE place_annotation ( -- replicate (verbose)
+    place               INTEGER NOT NULL, -- PK, references place.id
+    annotation          INTEGER NOT NULL -- PK, references annotation.id
+);
+
+CREATE TABLE place_gid_redirect ( -- replicate (verbose)
+    gid                 UUID NOT NULL, -- PK
+    new_id              INTEGER NOT NULL, -- references place.id
+    created             TIMESTAMP DEFAULT NOW() 
+);
+
+CREATE TABLE place_tag ( -- replicate (verbose)
+    place               INTEGER NOT NULL, -- PK, references place.id
+    tag                 INTEGER NOT NULL, -- PK, references tag.id
+    count               INTEGER NOT NULL,
+    last_updated        TIMESTAMP DEFAULT NOW() 
+);
+
+CREATE TABLE place_tag_raw
 (
+    place               INTEGER NOT NULL, -- PK, references place.id
+    editor              INTEGER NOT NULL, -- PK, references editor.id
+    tag                 INTEGER NOT NULL, -- PK, references tag.id
+    is_upvote           BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+CREATE TABLE place_type ( -- replicate
+    id                  SERIAL, -- PK
+    name                VARCHAR(255) NOT NULL,
+    parent              INTEGER, -- references place_type.id
+    child_order         INTEGER NOT NULL DEFAULT 0,
+    description         TEXT
+);
+
+CREATE TABLE replication_control ( -- replicate
     id                              SERIAL,
     current_schema_sequence         INTEGER NOT NULL,
     current_replication_sequence    INTEGER,
-    last_replication_date           TIMESTAMP 
+    last_replication_date           TIMESTAMP
 );
 
-CREATE TABLE recording (
+CREATE TABLE recording ( -- replicate (verbose)
     id                  SERIAL,
     gid                 UUID NOT NULL,
-    name                INTEGER NOT NULL, -- references track_name.id
+    name                VARCHAR NOT NULL,
     artist_credit       INTEGER NOT NULL, -- references artist_credit.id
     length              INTEGER CHECK (length IS NULL OR length > 0),
     comment             VARCHAR(255) NOT NULL DEFAULT '',
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    video               BOOLEAN NOT NULL DEFAULT FALSE
 );
+
+CREATE TABLE recording_alias_type ( -- replicate
+    id SERIAL, -- PK,
+    name TEXT NOT NULL,
+    parent              INTEGER, -- references recording_alias_type.id
+    child_order         INTEGER NOT NULL DEFAULT 0,
+    description         TEXT
+);
+
+CREATE TABLE recording_alias ( -- replicate (verbose)
+    id                  SERIAL, --PK
+    recording           INTEGER NOT NULL, -- references recording.id
+    name                VARCHAR NOT NULL,
+    locale              TEXT,
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >=0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    type                INTEGER, -- references recording_alias_type.id
+    sort_name           VARCHAR NOT NULL,
+    begin_date_year     SMALLINT,
+    begin_date_month    SMALLINT,
+    begin_date_day      SMALLINT,
+    end_date_year       SMALLINT,
+    end_date_month      SMALLINT,
+    end_date_day        SMALLINT,
+    primary_for_locale  BOOLEAN NOT NULL DEFAULT false,
+    ended               BOOLEAN NOT NULL DEFAULT FALSE,
+             CONSTRAINT primary_check2
+                 CHECK ((locale IS NULL AND primary_for_locale IS FALSE) OR (locale IS NOT NULL)));
 
 CREATE TABLE recording_rating_raw
 (
@@ -1168,50 +2117,38 @@ CREATE TABLE recording_tag_raw
 (
     recording           INTEGER NOT NULL, -- PK, references recording.id
     editor              INTEGER NOT NULL, -- PK, references editor.id
-    tag                 INTEGER NOT NULL -- PK, references tag.id
+    tag                 INTEGER NOT NULL, -- PK, references tag.id
+    is_upvote           BOOLEAN NOT NULL DEFAULT TRUE
 );
 
-CREATE TABLE recording_annotation
-(
+CREATE TABLE recording_annotation ( -- replicate (verbose)
     recording           INTEGER NOT NULL, -- PK, references recording.id
     annotation          INTEGER NOT NULL -- PK, references annotation.id
 );
 
-CREATE TABLE recording_meta
-(
+CREATE TABLE recording_meta ( -- replicate
     id                  INTEGER NOT NULL, -- PK, references recording.id CASCADE
     rating              SMALLINT CHECK (rating >= 0 AND rating <= 100),
     rating_count        INTEGER
 );
 
-CREATE TABLE recording_gid_redirect
-(
+CREATE TABLE recording_gid_redirect ( -- replicate (verbose)
     gid                 UUID NOT NULL, -- PK
     new_id              INTEGER NOT NULL, -- references recording.id
-    created             TIMESTAMP DEFAULT NOW()
+    created             TIMESTAMP DEFAULT NOW() 
 );
 
-CREATE TABLE recording_puid
-(
-    id                  SERIAL,
-    puid                INTEGER NOT NULL, -- references puid.id
-    recording           INTEGER NOT NULL, -- references recording.id
-    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    created             TIMESTAMP DEFAULT NOW()
-);
-
-CREATE TABLE recording_tag
-(
+CREATE TABLE recording_tag ( -- replicate (verbose)
     recording           INTEGER NOT NULL, -- PK, references recording.id
     tag                 INTEGER NOT NULL, -- PK, references tag.id
     count               INTEGER NOT NULL,
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() 
 );
 
-CREATE TABLE release (
+CREATE TABLE release ( -- replicate (verbose)
     id                  SERIAL,
     gid                 UUID NOT NULL,
-    name                INTEGER NOT NULL, -- references release_name.id
+    name                VARCHAR NOT NULL,
     artist_credit       INTEGER NOT NULL, -- references artist_credit.id
     release_group       INTEGER NOT NULL, -- references release_group.id
     status              INTEGER, -- references release_status.id
@@ -1222,10 +2159,38 @@ CREATE TABLE release (
     comment             VARCHAR(255) NOT NULL DEFAULT '',
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
     quality             SMALLINT NOT NULL DEFAULT -1,
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() 
 );
 
-CREATE TABLE release_country (
+CREATE TABLE release_alias_type ( -- replicate
+    id SERIAL, -- PK,
+    name TEXT NOT NULL,
+    parent              INTEGER, -- references release_alias_type.id
+    child_order         INTEGER NOT NULL DEFAULT 0,
+    description         TEXT
+);
+
+CREATE TABLE release_alias ( -- replicate (verbose)
+    id                  SERIAL, --PK
+    release             INTEGER NOT NULL, -- references release.id
+    name                VARCHAR NOT NULL,
+    locale              TEXT,
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >=0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    type                INTEGER, -- references release_alias_type.id
+    sort_name           VARCHAR NOT NULL,
+    begin_date_year     SMALLINT,
+    begin_date_month    SMALLINT,
+    begin_date_day      SMALLINT,
+    end_date_year       SMALLINT,
+    end_date_month      SMALLINT,
+    end_date_day        SMALLINT,
+    primary_for_locale  BOOLEAN NOT NULL DEFAULT false,
+    ended               BOOLEAN NOT NULL DEFAULT FALSE,
+             CONSTRAINT primary_check3
+                 CHECK ((locale IS NULL AND primary_for_locale IS FALSE) OR (locale IS NOT NULL)));
+
+CREATE TABLE release_country ( -- replicate (verbose)
   release INTEGER NOT NULL,  -- PK, references release.id
   country INTEGER NOT NULL,  -- PK, references country_area.area
   date_year SMALLINT,
@@ -1233,20 +2198,19 @@ CREATE TABLE release_country (
   date_day SMALLINT
 );
 
-CREATE TABLE release_unknown_country (
+CREATE TABLE release_unknown_country ( -- replicate (verbose)
   release INTEGER NOT NULL,  -- PK, references release.id
   date_year SMALLINT,
   date_month SMALLINT,
   date_day SMALLINT
 );
 
-CREATE TABLE release_raw
-(
-    id                  SERIAL,
+CREATE TABLE release_raw ( -- replicate
+    id                  SERIAL, -- PK
     title               VARCHAR(255) NOT NULL,
     artist              VARCHAR(255),
-    added               TIMESTAMP DEFAULT NOW(),
-    last_modified        TIMESTAMP DEFAULT NOW(),
+    added               TIMESTAMP DEFAULT NOW() ,
+    last_modified        TIMESTAMP DEFAULT NOW() ,
     lookup_count         INTEGER DEFAULT 0,
     modify_count         INTEGER DEFAULT 0,
     source              INTEGER DEFAULT 0,
@@ -1258,80 +2222,107 @@ CREATE TABLE release_tag_raw
 (
     release             INTEGER NOT NULL, -- PK, references release.id
     editor              INTEGER NOT NULL, -- PK, references editor.id
-    tag                 INTEGER NOT NULL -- PK, references tag.id
+    tag                 INTEGER NOT NULL, -- PK, references tag.id
+    is_upvote           BOOLEAN NOT NULL DEFAULT TRUE
 );
 
-CREATE TABLE release_annotation
-(
+CREATE TABLE release_annotation ( -- replicate (verbose)
     release             INTEGER NOT NULL, -- PK, references release.id
     annotation          INTEGER NOT NULL -- PK, references annotation.id
 );
 
-CREATE TABLE release_gid_redirect
-(
+CREATE TABLE release_gid_redirect ( -- replicate (verbose)
     gid                 UUID NOT NULL, -- PK
     new_id              INTEGER NOT NULL, -- references release.id
-    created             TIMESTAMP DEFAULT NOW()
+    created             TIMESTAMP DEFAULT NOW() 
 );
 
--- H2 does not support ENUM
--- CREATE TYPE cover_art_presence AS ENUM ('absent', 'present', 'darkened');
 
-CREATE TABLE release_meta
-(
+CREATE TABLE release_meta ( -- replicate (verbose)
     id                  INTEGER NOT NULL, -- PK, references release.id CASCADE
-    date_added          TIMESTAMP DEFAULT NOW(),
+    date_added          TIMESTAMP DEFAULT NOW() ,
     info_url            VARCHAR(255),
     amazon_asin         VARCHAR(10),
     amazon_store        VARCHAR(20),
-    cover_art_presence  VARCHAR  NOT NULL DEFAULT 'absent' -- -- H2 does not support ENUM =< VARCHAR
+    cover_art_presence  VARCHAR NOT NULL DEFAULT 'absent'
 );
 
 CREATE TABLE release_coverart
 (
     id                  INTEGER NOT NULL, -- PK, references release.id CASCADE
-    last_updated        TIMESTAMP ,
+    last_updated        TIMESTAMP,
     cover_art_url       VARCHAR(255)
 );
 
-CREATE TABLE release_label (
+CREATE TABLE release_label ( -- replicate (verbose)
     id                  SERIAL,
     release             INTEGER NOT NULL, -- references release.id
     label               INTEGER, -- references label.id
     catalog_number      VARCHAR(255),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() 
 );
 
-CREATE TABLE release_packaging
-(
+CREATE TABLE release_packaging ( -- replicate
     id                  SERIAL,
-    name                VARCHAR(255) NOT NULL
+    name                VARCHAR(255) NOT NULL,
+    parent              INTEGER, -- references release_packaging.id
+    child_order         INTEGER NOT NULL DEFAULT 0,
+    description         TEXT
 );
 
-CREATE TABLE release_status
-(
+CREATE TABLE release_status ( -- replicate
     id                  SERIAL,
-    name                VARCHAR(255) NOT NULL
+    name                VARCHAR(255) NOT NULL,
+    parent              INTEGER, -- references release_status.id
+    child_order         INTEGER NOT NULL DEFAULT 0,
+    description         TEXT
 );
 
-CREATE TABLE release_tag
-(
+CREATE TABLE release_tag ( -- replicate (verbose)
     release             INTEGER NOT NULL, -- PK, references release.id
     tag                 INTEGER NOT NULL, -- PK, references tag.id
     count               INTEGER NOT NULL,
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() 
 );
 
-CREATE TABLE release_group (
+CREATE TABLE release_group ( -- replicate (verbose)
     id                  SERIAL,
     gid                 UUID NOT NULL,
-    name                INTEGER NOT NULL, -- references release_name.id
+    name                VARCHAR NOT NULL,
     artist_credit       INTEGER NOT NULL, -- references artist_credit.id
     type                INTEGER, -- references release_group_primary_type.id
     comment             VARCHAR(255) NOT NULL DEFAULT '',
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() 
 );
+
+CREATE TABLE release_group_alias_type ( -- replicate
+    id SERIAL, -- PK,
+    name TEXT NOT NULL,
+    parent              INTEGER, -- references release_group_alias_type.id
+    child_order         INTEGER NOT NULL DEFAULT 0,
+    description         TEXT
+);
+
+CREATE TABLE release_group_alias ( -- replicate (verbose)
+    id                  SERIAL, --PK
+    release_group       INTEGER NOT NULL, -- references release_group.id
+    name                VARCHAR NOT NULL,
+    locale              TEXT,
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >=0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    type                INTEGER, -- references release_group_alias_type.id
+    sort_name           VARCHAR NOT NULL,
+    begin_date_year     SMALLINT,
+    begin_date_month    SMALLINT,
+    begin_date_day      SMALLINT,
+    end_date_year       SMALLINT,
+    end_date_month      SMALLINT,
+    end_date_day        SMALLINT,
+    primary_for_locale  BOOLEAN NOT NULL DEFAULT false,
+    ended               BOOLEAN NOT NULL DEFAULT FALSE,
+             CONSTRAINT primary_check
+                 CHECK ((locale IS NULL AND primary_for_locale IS FALSE) OR (locale IS NOT NULL)));
 
 CREATE TABLE release_group_rating_raw
 (
@@ -1344,24 +2335,22 @@ CREATE TABLE release_group_tag_raw
 (
     release_group       INTEGER NOT NULL, -- PK, references release_group.id
     editor              INTEGER NOT NULL, -- PK, references editor.id
-    tag                 INTEGER NOT NULL -- PK, references tag.id
+    tag                 INTEGER NOT NULL, -- PK, references tag.id
+    is_upvote           BOOLEAN NOT NULL DEFAULT TRUE
 );
 
-CREATE TABLE release_group_annotation
-(
+CREATE TABLE release_group_annotation ( -- replicate (verbose)
     release_group       INTEGER NOT NULL, -- PK, references release_group.id
     annotation          INTEGER NOT NULL -- PK, references annotation.id
 );
 
-CREATE TABLE release_group_gid_redirect
-(
+CREATE TABLE release_group_gid_redirect ( -- replicate (verbose)
     gid                 UUID NOT NULL, -- PK
     new_id              INTEGER NOT NULL, -- references release_group.id
-    created             TIMESTAMP DEFAULT NOW()
+    created             TIMESTAMP DEFAULT NOW() 
 );
 
-CREATE TABLE release_group_meta
-(
+CREATE TABLE release_group_meta ( -- replicate
     id                  INTEGER NOT NULL, -- PK, references release_group.id CASCADE
     release_count       INTEGER NOT NULL DEFAULT 0,
     first_release_date_year   SMALLINT,
@@ -1371,37 +2360,36 @@ CREATE TABLE release_group_meta
     rating_count        INTEGER
 );
 
-CREATE TABLE release_group_tag
-(
+CREATE TABLE release_group_tag ( -- replicate (verbose)
     release_group       INTEGER NOT NULL, -- PK, references release_group.id
     tag                 INTEGER NOT NULL, -- PK, references tag.id
     count               INTEGER NOT NULL,
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() 
 );
 
-CREATE TABLE release_group_primary_type (
+CREATE TABLE release_group_primary_type ( -- replicate
     id                  SERIAL,
-    name                VARCHAR(255) NOT NULL
+    name                VARCHAR(255) NOT NULL,
+    parent              INTEGER, -- references release_group_primary_type.id
+    child_order         INTEGER NOT NULL DEFAULT 0,
+    description         TEXT
 );
 
-CREATE TABLE release_group_secondary_type (
+CREATE TABLE release_group_secondary_type ( -- replicate
     id SERIAL NOT NULL, -- pk
-    name TEXT NOT NULL
+    name TEXT NOT NULL,
+    parent              INTEGER, -- references release_group_secondary_type.id
+    child_order         INTEGER NOT NULL DEFAULT 0,
+    description         TEXT
 );
 
-CREATE TABLE release_group_secondary_type_join (
+CREATE TABLE release_group_secondary_type_join ( -- replicate (verbose)
     release_group INTEGER NOT NULL, -- PK, references release_group.id,
     secondary_type INTEGER NOT NULL, -- PK, references release_group_secondary_type.id
     created TIMESTAMP NOT NULL DEFAULT now()
 );
 
-CREATE TABLE release_name (
-    id                  SERIAL,
-    name                VARCHAR NOT NULL
-);
-
-CREATE TABLE script
-(
+CREATE TABLE script ( -- replicate
     id                  SERIAL,
     iso_code            CHAR(4) NOT NULL, -- ISO 15924
     iso_number          CHAR(3) NOT NULL, -- ISO 15924
@@ -1409,16 +2397,96 @@ CREATE TABLE script
     frequency           INTEGER NOT NULL DEFAULT 0
 );
 
-CREATE TABLE script_language
-(
+CREATE TABLE series ( -- replicate (verbose)
     id                  SERIAL,
-    script              INTEGER NOT NULL, -- references script.id
-    language            INTEGER NOT NULL, -- references language.id
-    frequency           INTEGER NOT NULL DEFAULT 0
+    gid                 UUID NOT NULL,
+    name                VARCHAR NOT NULL,
+    comment             VARCHAR(255) NOT NULL DEFAULT '',
+    type                INTEGER NOT NULL, -- references series_type.id
+    ordering_attribute  INTEGER NOT NULL, -- references link_text_attribute_type.attribute_type
+    ordering_type       INTEGER NOT NULL, -- references series_ordering_type.id
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() 
 );
 
-CREATE TABLE tag
+CREATE TABLE series_type ( -- replicate (verbose)
+    id                  SERIAL,
+    name                VARCHAR(255) NOT NULL,
+    entity_type         VARCHAR(50) NOT NULL,
+    parent              INTEGER, -- references series_type.id
+    child_order         INTEGER NOT NULL DEFAULT 0,
+    description         TEXT
+);
+
+CREATE TABLE series_ordering_type ( -- replicate (verbose)
+    id                  SERIAL,
+    name                VARCHAR(255) NOT NULL,
+    parent              INTEGER, -- references series_ordering_type.id
+    child_order         INTEGER NOT NULL DEFAULT 0,
+    description         TEXT
+);
+
+CREATE TABLE series_deletion
 (
+    gid                 UUID NOT NULL, -- PK
+    last_known_name     VARCHAR NOT NULL,
+    last_known_comment  TEXT NOT NULL,
+    deleted_at          timestamp NOT NULL DEFAULT now()
+);
+
+CREATE TABLE series_gid_redirect ( -- replicate (verbose)
+    gid                 UUID NOT NULL, -- PK
+    new_id              INTEGER NOT NULL, -- references series.id
+    created             TIMESTAMP DEFAULT NOW() 
+);
+
+CREATE TABLE series_alias_type ( -- replicate (verbose)
+    id                  SERIAL, -- PK
+    name                TEXT NOT NULL,
+    parent              INTEGER, -- references series_alias_type.id
+    child_order         INTEGER NOT NULL DEFAULT 0,
+    description         TEXT
+);
+
+CREATE TABLE series_alias ( -- replicate (verbose)
+    id                  SERIAL, -- PK
+    series              INTEGER NOT NULL, -- references series.id
+    name                VARCHAR NOT NULL,
+    locale              TEXT,
+    edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    type                INTEGER, -- references series_alias_type.id
+    sort_name           VARCHAR NOT NULL,
+    begin_date_year     SMALLINT,
+    begin_date_month    SMALLINT,
+    begin_date_day      SMALLINT,
+    end_date_year       SMALLINT,
+    end_date_month      SMALLINT,
+    end_date_day        SMALLINT,
+    primary_for_locale  BOOLEAN NOT NULL DEFAULT FALSE,
+    ended               BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+CREATE TABLE series_annotation ( -- replicate (verbose)
+    series              INTEGER NOT NULL, -- PK, references series.id
+    annotation          INTEGER NOT NULL -- PK, references annotation.id
+);
+
+CREATE TABLE series_tag ( -- replicate (verbose)
+    series              INTEGER NOT NULL, -- PK, references series.id
+    tag                 INTEGER NOT NULL, -- PK, references tag.id
+    count               INTEGER NOT NULL,
+    last_updated        TIMESTAMP DEFAULT NOW() 
+);
+
+CREATE TABLE series_tag_raw (
+    series              INTEGER NOT NULL, -- PK, references series.id
+    editor              INTEGER NOT NULL, -- PK, references editor.id
+    tag                 INTEGER NOT NULL, -- PK, references tag.id
+    is_upvote           BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+CREATE TABLE tag ( -- replicate (verbose)
     id                  SERIAL,
     name                VARCHAR(255) NOT NULL,
     ref_count           INTEGER NOT NULL DEFAULT 0
@@ -1429,66 +2497,56 @@ CREATE TABLE tag_relation
     tag1                INTEGER NOT NULL, -- PK, references tag.id
     tag2                INTEGER NOT NULL, -- PK, references tag.id
     weight              INTEGER NOT NULL,
-    last_updated        TIMESTAMP DEFAULT NOW(),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
     CHECK (tag1 < tag2)
 );
 
-CREATE TABLE track
-(
+CREATE TABLE track ( -- replicate (verbose)
     id                  SERIAL,
     gid                 UUID NOT NULL,
     recording           INTEGER NOT NULL, -- references recording.id
     medium              INTEGER NOT NULL, -- references medium.id
     position            INTEGER NOT NULL,
     number              TEXT NOT NULL,
-    name                INTEGER NOT NULL, -- references track_name.id
+    name                VARCHAR NOT NULL,
     artist_credit       INTEGER NOT NULL, -- references artist_credit.id
     length              INTEGER CHECK (length IS NULL OR length > 0),
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() ,
+    is_data_track       BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE track_gid_redirect
-(
+CREATE TABLE track_gid_redirect ( -- replicate (verbose)
     gid                 UUID NOT NULL, -- PK
     new_id              INTEGER NOT NULL, -- references track.id
-    created             TIMESTAMP DEFAULT NOW()
+    created             TIMESTAMP DEFAULT NOW() 
 );
 
-CREATE TABLE track_raw
-(
-    id                  SERIAL,
+CREATE TABLE track_raw ( -- replicate
+    id                  SERIAL, -- PK
     release             INTEGER NOT NULL,   -- references release_raw.id
     title               VARCHAR(255) NOT NULL,
     artist              VARCHAR(255),   -- For VA albums, otherwise empty
     sequence            INTEGER NOT NULL
 );
 
-CREATE TABLE track_name (
-    id                  SERIAL,
-    name                VARCHAR NOT NULL
-);
-
-CREATE TABLE medium_index
-(
+CREATE TABLE medium_index ( -- replicate
     medium              INTEGER, -- PK, references medium.id CASCADE
-    toc                 VARCHAR -- H2 do not support CUBE => VARCHAR
+    toc                 VARCHAR
 );
 
-CREATE TABLE url
-(
+CREATE TABLE url ( -- replicate
     id                  SERIAL,
     gid                 UUID NOT NULL,
     url                 TEXT NOT NULL,
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() 
 );
 
-CREATE TABLE url_gid_redirect
-(
+CREATE TABLE url_gid_redirect ( -- replicate
     gid                 UUID NOT NULL, -- PK
     new_id              INTEGER NOT NULL, -- references url.id
-    created             TIMESTAMP DEFAULT NOW()
+    created             TIMESTAMP DEFAULT NOW() 
 );
 
 CREATE TABLE vote
@@ -1497,19 +2555,24 @@ CREATE TABLE vote
     editor              INTEGER NOT NULL, -- references editor.id
     edit                INTEGER NOT NULL, -- references edit.id
     vote                SMALLINT NOT NULL,
-    vote_time            TIMESTAMP DEFAULT NOW(),
+    vote_time            TIMESTAMP DEFAULT NOW() ,
     superseded          BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE work (
+CREATE TABLE work ( -- replicate (verbose)
     id                  SERIAL,
     gid                 UUID NOT NULL,
-    name                INTEGER NOT NULL, -- references work_name.id
+    name                VARCHAR NOT NULL,
     type                INTEGER, -- references work_type.id
     comment             VARCHAR(255) NOT NULL DEFAULT '',
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW(),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
     language            INTEGER  -- references language.id
+);
+
+CREATE TABLE work_lastmod (
+    id                  INTEGER NOT NULL, -- PK, references work.id CASCADE
+    last_modified       TIMESTAMP DEFAULT NOW() 
 );
 
 CREATE TABLE work_rating_raw
@@ -1523,89 +2586,92 @@ CREATE TABLE work_tag_raw
 (
     work                INTEGER NOT NULL, -- PK, references work.id
     editor              INTEGER NOT NULL, -- PK, references editor.id
-    tag                 INTEGER NOT NULL -- PK, references tag.id
+    tag                 INTEGER NOT NULL, -- PK, references tag.id
+    is_upvote           BOOLEAN NOT NULL DEFAULT TRUE
 );
 
-CREATE TABLE work_alias_type (
+CREATE TABLE work_alias_type ( -- replicate
     id SERIAL,
-    name TEXT NOT NULL
+    name TEXT NOT NULL,
+    parent              INTEGER, -- references work_alias_type.id
+    child_order         INTEGER NOT NULL DEFAULT 0,
+    description         TEXT
 );
 
-CREATE TABLE work_alias
-(
+CREATE TABLE work_alias ( -- replicate (verbose)
     id                  SERIAL,
     work                INTEGER NOT NULL, -- references work.id
-    name                INTEGER NOT NULL, -- references work_name.id
+    name                VARCHAR NOT NULL,
     locale              TEXT,
     edits_pending       INTEGER NOT NULL DEFAULT 0 CHECK (edits_pending >= 0),
-    last_updated        TIMESTAMP DEFAULT NOW(),
+    last_updated        TIMESTAMP DEFAULT NOW() ,
     type                INTEGER, -- references work_alias_type.id
-    sort_name           INTEGER NOT NULL, -- references work_name.id
+    sort_name           VARCHAR NOT NULL,
     begin_date_year     SMALLINT,
     begin_date_month    SMALLINT,
     begin_date_day      SMALLINT,
     end_date_year       SMALLINT,
     end_date_month      SMALLINT,
     end_date_day        SMALLINT,
-    primary_for_locale  BOOLEAN NOT NULL DEFAULT false
+    primary_for_locale  BOOLEAN NOT NULL DEFAULT false,
+    ended               BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE work_annotation
-(
+CREATE TABLE work_annotation ( -- replicate (verbose)
     work                INTEGER NOT NULL, -- PK, references work.id
     annotation          INTEGER NOT NULL -- PK, references annotation.id
 );
 
-CREATE TABLE work_gid_redirect
-(
+CREATE TABLE work_gid_redirect ( -- replicate (verbose)
     gid                 UUID NOT NULL, -- PK
     new_id              INTEGER NOT NULL, -- references work.id
-    created             TIMESTAMP DEFAULT NOW()
+    created             TIMESTAMP DEFAULT NOW() 
 );
 
-CREATE TABLE work_meta
-(
+CREATE TABLE work_meta ( -- replicate
     id                  INTEGER NOT NULL, -- PK, references work.id CASCADE
     rating              SMALLINT CHECK (rating >= 0 AND rating <= 100),
     rating_count        INTEGER
 );
 
-CREATE TABLE work_name (
-    id                  SERIAL,
-    name                VARCHAR NOT NULL
-);
-
-CREATE TABLE work_tag
-(
+CREATE TABLE work_tag ( -- replicate (verbose)
     work                INTEGER NOT NULL, -- PK, references work.id
     tag                 INTEGER NOT NULL, -- PK, references tag.id
     count               INTEGER NOT NULL,
-    last_updated        TIMESTAMP DEFAULT NOW()
+    last_updated        TIMESTAMP DEFAULT NOW() 
 );
 
-CREATE TABLE work_type (
+CREATE TABLE work_type ( -- replicate
     id                  SERIAL,
-    name                VARCHAR(255) NOT NULL
+    name                VARCHAR(255) NOT NULL,
+    parent              INTEGER, -- references work_type.id
+    child_order         INTEGER NOT NULL DEFAULT 0,
+    description         TEXT
 );
 
-CREATE TABLE work_attribute_type (
+CREATE TABLE work_attribute_type ( -- replicate (verbose)
     id                  SERIAL,  -- PK
     name                VARCHAR(255) NOT NULL,
     comment             VARCHAR(255) NOT NULL DEFAULT '',
-    free_text           BOOLEAN NOT NULL
+    free_text           BOOLEAN NOT NULL,
+    parent              INTEGER, -- references work_attribute_type.id
+    child_order         INTEGER NOT NULL DEFAULT 0,
+    description         TEXT
 );
 
-CREATE TABLE work_attribute_type_allowed_value (
+CREATE TABLE work_attribute_type_allowed_value ( -- replicate (verbose)
     id                  SERIAL,  -- PK
     work_attribute_type INTEGER NOT NULL, -- references work_attribute_type.id
-    value               TEXT
+    value               TEXT,
+    parent              INTEGER, -- references work_attribute_type_allowed_value.id
+    child_order         INTEGER NOT NULL DEFAULT 0,
+    description         TEXT
 );
 
-CREATE TABLE work_attribute (
+CREATE TABLE work_attribute ( -- replicate (verbose)
     id                                  SERIAL,  -- PK
     work                                INTEGER NOT NULL, -- references work.id
     work_attribute_type                 INTEGER NOT NULL, -- references work_attribute_type.id
     work_attribute_type_allowed_value   INTEGER, -- references work_attribute_type_allowed_value.id
     work_attribute_text                 TEXT
- 
 );

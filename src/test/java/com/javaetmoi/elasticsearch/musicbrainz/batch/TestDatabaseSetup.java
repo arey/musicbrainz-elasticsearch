@@ -61,8 +61,8 @@ public class TestDatabaseSetup {
 				+"    release_group.id AS albumId,"				
 				+"    release_group.gid AS albumGid,"
 				+"    release_group.type AS albumPrimaryTypeId,"
-				+"    release_name.name AS albumName,"
-				+"    artist_name.name AS artistName,"
+				+"    release_group.name AS albumName,"
+				+"    artist.name AS artistName,"
 				+"    artist.gid AS artistGid,"
 				+"    artist.type as artistTypeId,"	
 				+"    artist.begin_date_year artistBeginDateYear,"
@@ -81,10 +81,6 @@ public class TestDatabaseSetup {
 				+"    ON artist_credit.id = artist_credit_name.artist_credit"
 				+" INNER JOIN release_group"
 				+"    ON release_group.artist_credit = artist_credit.id"
-				+" INNER JOIN release_name"
-				+"    ON release_name.id = release_group.name"
-				+" INNER JOIN artist_name "
-				+"   ON artist.name = artist_name.id"
 				+" INNER JOIN area"
 				+"   ON artist.area = area.id"
 				+" LEFT OUTER JOIN release_group_secondary_type_join"
@@ -97,7 +93,7 @@ public class TestDatabaseSetup {
 				+"    release_group.type = '1'"
 				+"	  AND artist_credit.artist_count = 1"
 				+"    AND release_group_secondary_type_join.secondary_type IS NULL"
-				+"    AND	upper(artist_name.name) = 'U2'";
+				+"    AND upper(artist.name) = 'U2'";
 		 List<Album> albums = musicBrainzJdbcTemplate.query(sql, new AlbumRowMapper());
 		assertEquals(albums.size(), 13);
 

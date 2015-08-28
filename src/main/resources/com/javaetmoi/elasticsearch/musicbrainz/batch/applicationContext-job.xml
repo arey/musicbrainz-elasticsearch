@@ -68,8 +68,8 @@
                 release_group.id AS albumId,                
                 release_group.gid AS albumGid,
                 release_group.type AS albumPrimaryTypeId,
-                release_name.name AS albumName,
-                artist_name.name AS artistName,
+                release_group.name AS albumName,
+                artist.name AS artistName,
                 artist.gid AS artistGid,
                 artist.type as artistTypeId,    
                 artist.begin_date_year artistBeginDateYear,
@@ -88,10 +88,6 @@
                 ON artist_credit.id = artist_credit_name.artist_credit
              INNER JOIN release_group
                 ON release_group.artist_credit = artist_credit.id
-             INNER JOIN release_name
-                ON release_name.id = release_group.name
-             INNER JOIN artist_name 
-               ON artist.name = artist_name.id
              INNER JOIN area
                ON artist.area = area.id
              LEFT OUTER JOIN release_group_secondary_type_join
