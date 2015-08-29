@@ -17,7 +17,7 @@ import java.io.IOException;
 
 import org.elasticsearch.common.xcontent.XContentBuilder;
 
-import com.javaetmoi.core.batch.item.EsDocumentProcessor;
+import com.javaetmoi.core.batch.processor.EsDocumentProcessor;
 import com.javaetmoi.elasticsearch.musicbrainz.domain.Album;
 import com.javaetmoi.elasticsearch.musicbrainz.domain.Artist;
 import com.javaetmoi.elasticsearch.musicbrainz.domain.Rating;

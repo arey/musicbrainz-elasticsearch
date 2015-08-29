@@ -60,6 +60,7 @@
     <version.spring-batch>3.0.5.RELEASE</version.spring-batch>
     <version.commons-io>2.4</version.commons-io>
     <version.musicbrainz-data>3.1.0</version.musicbrainz-data>
+    <version.spring-batch-toolkit>1.0.1</version.spring-batch-toolkit>
 
     <!-- Version of ElasticSearch -->
     <version.elasticsearch>1.7.1</version.elasticsearch>
@@ -104,6 +105,11 @@
       <artifactId>spring-batch-test</artifactId>
       <version>${version.spring-batch}</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.javaetmoi.core</groupId>
+      <artifactId>spring-batch-toolkit</artifactId>
+      <version>${version.spring-batch-toolkit}</version>
     </dependency>
     <!-- Spring Test -->
     <dependency>

@@ -116,7 +116,7 @@
     </property>
   </bean>
 
-  <bean id="musicAlbumWriter" class="com.javaetmoi.core.batch.item.EsDocumentWriter" 
+  <bean id="musicAlbumWriter" class="com.javaetmoi.core.batch.writer.EsDocumentWriter"
     p:indexName="${es.index}" p:esClient-ref="esClient" p:timeout="${es.index.timeout}" />
     
   <bean id="musicAlbumProcessor" class="org.springframework.batch.item.support.CompositeItemProcessor"> 
