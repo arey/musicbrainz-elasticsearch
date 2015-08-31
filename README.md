@@ -26,7 +26,32 @@ This project depends on several other open source projects:
 
 ## Prerequisites ##
 
-### 1. MusicBrainz ###
+A MusicBrainz database and an Elasticsearch cluster are the 2 pre-requisites in order to execute the batch.
+You have the choice by setting by yourself a MusicBrainz database and an Elasticsearch cluster or to use **Docker**.
+
+### Automatic installation with Docker
+
+Use [Docker Compose](https://docs.docker.com/compose/) to set up both a PostgreSQL database and an Elasticsearch cluster and import the musicbrainz database.
+
+If you are on MacOS or Windows, you have to install [Boot2docker](http://boot2docker.io/) in order to user Docker and Docker Compose. [You will have to increase the DiskSize up to 100 Gb](https://docs.docker.com/articles/b2d_volume_resize/).
+
+Command lines to start PostgreSQL and Elasticsearch:
+
+* `git clone https://github.com/arey/musicbrainz-elasticsearch.git`
+* `cd docker-es-musicbrainz`
+* `docker-compose up -d`
+* `docker-compose run postgresql /create-database.sh`
+* If you are using Boot2docker: 
+** `boot2docker ip`
+** edit the `es-musicbrainz-batch.properties` file and replace *localhost* with the IP in the *es.host* and *db.musicbrainz.url* properties.
+
+The last command line creates the database, downloads the latest dumps then populates the database.
+Depending your bandwidth, downloading of the *mbdump.tar.bz2* could be take more than hour.
+
+
+### Manual installation
+
+#### 1. MusicBrainz ###
 
 To index MusicBrainz data, **the batch requires a connection to the MusicBrainz PostgreSQL relational database**.<br>
 [Musicbrainz.org](http://Musicbrainz.org "Musicbrainz.org") does not provide a public access to its database. Thus you have to install your own database.
@@ -35,16 +60,18 @@ There are a two different methods to get a local database up and running, you ca
 * Download a pre-configured [virtual image of the MusicBrainz Server](http://musicbrainz.org/doc/MusicBrainz_Server/Setup), or
 * Download the last [data dumps](http://ftp.musicbrainz.org/pub/musicbrainz/data/fullexport/) and follow the relevant section of the [INSTALL.md](https://github.com/metabrainz/musicbrainz-server/blob/master/INSTALL.md)
 
-For my part, I have chosen to download the MusicBrainz Server virtual machine. Available in Open Virtualization Archive (OVA), I have deployed it into [Oracle VirtualBox](https://www.virtualbox.org/) but you may prefer VMWare.<br/>
+For my part, before using Docker, I have chosen to download the MusicBrainz Server virtual machine. Available in Open Virtualization Archive (OVA), I have deployed it into [Oracle VirtualBox](https://www.virtualbox.org/) but you may prefer VMWare.<br/>
 Once finished the [MusicBrainz Server setup guide](http://musicbrainz.org/doc/MusicBrainz_Server/Setup), you have to follow the below two final steps in order the PostgreSQL database be accessible to your host:
 
-1. **Configuring port forwarding with NAT**<br/>
+**Configuring port forwarding with NAT**
+
 Port forwarding enables VirtualBox to listen to certain ports on the host and resends all packets which arrive there to the guest, on the same or a different port. You may used same port on host and guest. Configure two rules (the second is optional): 
 
 - PostgreSQL database - TCP - host : 5432 / guest : 5432 
 - MusicBrainz web server : TCP - host : 5000 / guest : 5000
 
-2. **Configuring PostgreSQL**<br />
+**Configuring PostgreSQL**
+
 To enable  remote access to the PostgreSQL database server, you may follow [those instructions](http://www.cyberciti.biz/tips/postgres-allow-remote-access-tcp-connection.html "How Do I Enable remote access to PostgreSQL database server?"). Log into the VM (credentials: vm / musicbrainz) and edit the two configuration files pg_hba.conf and postgresql.conf.
 
 Once steps done, you may connect to the database with any JDBC clients (ie. [SQuireL](http://squirrel-sql.sourceforge.net/ "SQuirreL SQL Client")): 
@@ -52,20 +79,18 @@ Once steps done, you may connect to the database with any JDBC clients (ie. [SQu
 * URL: jdbc:postgresql://localhost:5432/musicbrainz
 * Credentials: musicbrainz / musicbrainz
 
-### 2. Elasticsearch ###
+#### 2. Elasticsearch ###
 
-Before launching the batch, you have to [download Elasticsearch v0.90.5](http://www.elasticsearch.org/download/) and configure it. 
-One unziped, edit the config/elaticsearch.yml configuration file. Uncomment the _cluster.name_ line and set it with the  _musicbrainz_ cluster name:
-`cluster.name: musicbrainz`
-You may also prefer to keep the default _elasticsearch_ cluster name and change the name in the es-musicbrainz-batch.properties configuration file.
+Before launching the batch, you have to [download Elasticsearch v1.7.1](https://www.elastic.co/downloads/elasticsearch) and unarchived it. 
+You may want to change the default _elasticsearch_ cluster name from the config/elaticsearch.yml configuration file and change the name in the es-musicbrainz-batch.properties configuration file.
 
 ## Quick Start ##
 
 * `git clone https://github.com/arey/musicbrainz-elasticsearch.git`
-* start Elasticsearch
-* start MusicBrainz database or VM
 * `mvn install`
 * `mvn exec:java` (execute the *IndexBatchMain* main class) 
+
+On a Macbook Pro, the batch takes less than 3 minutes to build the Elasticsearch.
 
 ## Demo
 
@@ -111,7 +136,7 @@ French articles on the [javaetmoi.com](http://javaetmoi.com) blog:
     <th>Version</th><th>Release date</th><th>Features date</th>
   </tr>
   <tr>
-    <td>1.1-SNAPSHOT</td><td>Next version</td><td>Elasticsearch 1.0.0 update</td>
+    <td>1.1-SNAPSHOT</td><td>23/08/2015</td><td>Elasticsearch 1.7.1 update and Docker compose files</td>
   </tr>
   <tr>
     <td>1.0</td><td>26/10/2013</td><td>Initial version developed for a workshop about Elasticsearch (0.90.5)</td>
