@@ -25,8 +25,6 @@ import com.ninja_squad.dbsetup.operation.Operation;
 
 public class ArtistU2Operations {
 	
-	private static final int RELEASE_NAME_WAR_ID = 172891;
-
 	private static final int RELEASE_GROUP_WAR_ID = 1281;
 
 	private static final int ARTIST_ID_U2 = 197;
