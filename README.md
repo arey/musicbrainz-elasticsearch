@@ -20,7 +20,7 @@ From release groups, only "real" **Album** are indexed. Single, EP and Broadcast
 This project depends on several other open source projects:
 
 * **[Spring Batch](http://projects.spring.io/spring-batch/ "Spring Batch Home")** : the most popular Java batch framework.
-* **[Spring Data Elasticsearch](https://github.com/dadoonet/spring-elasticsearch "Spring factories for Elasticsearch")** : Spring factories for Elasticsearch used to inject ES client into batch tasklets.
+* **[Spring Data Elasticsearch](http://docs.spring.io/spring-data/elasticsearch/docs/current/reference/html/ "Spring Data Elasticsearch reference manual")** : Spring factories for Elasticsearch used to inject ES client into batch tasklets.
 * **[MusicBrainz data](https://github.com/lastfm/musicbrainz-data "musicbrainz-data")** : useful [Gender](https://github.com/lastfm/musicbrainz-data/blob/musicbrainz-data-3.1.0/src/main/java/fm/last/musicbrainz/data/model/Gender.java "Gender.java"), [ReleaseGroupPrimaryType](https://github.com/lastfm/musicbrainz-data/blob/musicbrainz-data-3.1.0/src/main/java/fm/last/musicbrainz/data/model/ReleaseGroupPrimaryType.java "ReleaseGroupPrimaryType.java") and [ArtistType](https://github.com/lastfm/musicbrainz-data/blob/musicbrainz-data-3.1.0/src/main/java/fm/last/musicbrainz/data/model/ArtistType.java "ArtistType.java") enumerations. JPA data bindings is not used by the batch.
 * **[DbSetup](http://dbsetup.ninja-squad.com/)** : the database unit test framework you must try.
 
