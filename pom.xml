@@ -64,7 +64,7 @@
 
     <!-- Version of ElasticSearch -->
     <version.elasticsearch>1.7.1</version.elasticsearch>
-    <version.spring-elasticsearch>1.0.0</version.spring-elasticsearch>
+    <version.spring-data-elasticsearch>1.2.2.RELEASE</version.spring-data-elasticsearch>
 
     <!-- Database -->
     <version.postgresql>9.1-901-1.jdbc4</version.postgresql>
@@ -174,11 +174,11 @@
       <artifactId>elasticsearch</artifactId>
       <version>${version.elasticsearch}</version>
     </dependency>
-    <!-- * Spring Elasticsearch -->
+    <!-- * Spring Data Elasticsearch -->
     <dependency>
-      <groupId>fr.pilato.spring</groupId>
-      <artifactId>spring-elasticsearch</artifactId>
-      <version>${version.spring-elasticsearch}</version>
+      <groupId>org.springframework.data</groupId>
+      <artifactId>spring-data-elasticsearch</artifactId>
+      <version>${version.spring-data-elasticsearch}</version>
     </dependency>
 
     <!-- Database -->

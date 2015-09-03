@@ -20,7 +20,7 @@ From release groups, only "real" **Album** are indexed. Single, EP and Broadcast
 This project depends on several other open source projects:
 
 * **[Spring Batch](http://projects.spring.io/spring-batch/ "Spring Batch Home")** : the most popular Java batch framework.
-* **[Spring Elasticsearch](https://github.com/dadoonet/spring-elasticsearch "Spring factories for Elasticsearch")** : Spring factories for Elasticsearch used to inject ES client into batch tasklets.
+* **[Spring Data Elasticsearch](https://github.com/dadoonet/spring-elasticsearch "Spring factories for Elasticsearch")** : Spring factories for Elasticsearch used to inject ES client into batch tasklets.
 * **[MusicBrainz data](https://github.com/lastfm/musicbrainz-data "musicbrainz-data")** : useful [Gender](https://github.com/lastfm/musicbrainz-data/blob/musicbrainz-data-3.1.0/src/main/java/fm/last/musicbrainz/data/model/Gender.java "Gender.java"), [ReleaseGroupPrimaryType](https://github.com/lastfm/musicbrainz-data/blob/musicbrainz-data-3.1.0/src/main/java/fm/last/musicbrainz/data/model/ReleaseGroupPrimaryType.java "ReleaseGroupPrimaryType.java") and [ArtistType](https://github.com/lastfm/musicbrainz-data/blob/musicbrainz-data-3.1.0/src/main/java/fm/last/musicbrainz/data/model/ArtistType.java "ArtistType.java") enumerations. JPA data bindings is not used by the batch.
 * **[DbSetup](http://dbsetup.ninja-squad.com/)** : the database unit test framework you must try.
 
@@ -136,7 +136,7 @@ French articles on the [javaetmoi.com](http://javaetmoi.com) blog:
     <th>Version</th><th>Release date</th><th>Features date</th>
   </tr>
   <tr>
-    <td>1.1-SNAPSHOT</td><td>23/08/2015</td><td>Elasticsearch 1.7.1 update and Docker compose files</td>
+    <td>1.1-SNAPSHOT</td><td>23/08/2015</td><td>Elasticsearch 1.7.1 update<br>Docker compose files<br>Spring Data Elasticsearch use</td>
   </tr>
   <tr>
     <td>1.0</td><td>26/10/2013</td><td>Initial version developed for a workshop about Elasticsearch (0.90.5)</td>

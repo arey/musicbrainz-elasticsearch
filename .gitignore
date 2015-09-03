@@ -9,3 +9,6 @@
 
 # Compiled classes
 target
+
+# Elasticsearch data
+data

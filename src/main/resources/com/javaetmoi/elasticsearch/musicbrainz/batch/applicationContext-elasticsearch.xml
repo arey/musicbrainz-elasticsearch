@@ -1,22 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:elasticsearch="http://www.pilato.fr/schema/elasticsearch"
-       xmlns:util="http://www.springframework.org/schema/util"
-       xsi:schemaLocation="
-           http://www.springframework.org/schema/beans    http://www.springframework.org/schema/beans/spring-beans.xsd
-           http://www.springframework.org/schema/util     http://www.springframework.org/schema/util/spring-util.xsd
-           http://www.pilato.fr/schema/elasticsearch      http://www.pilato.fr/schema/elasticsearch/elasticsearch-0.2.xsd
-        ">
+       xmlns:elasticsearch="http://www.springframework.org/schema/data/elasticsearch"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans    http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/data/elasticsearch
+           http://www.springframework.org/schema/data/elasticsearch/spring-elasticsearch.xsd"
+        >
 
-  <!--=== ElasticSearch Configuration === -->
-  <elasticsearch:client id="esClient" properties="esProperties" esNodes="${es.host}" />
-
-  <util:map id="esProperties">
-    <entry key="cluster.name" value="${es.cluster.name}" />
-    <entry key="client.transport.sniff" value="false" />
-    <entry key="client.transport.ping_timeout" value="${es.ping_timeout}" />
-  </util:map>
-
+    <!--=== Elasticsearch Configuration === -->
+    <elasticsearch:transport-client id="esClient"
+                                    cluster-name="${es.cluster.name}"
+                                    client-transport-ping-timeout="${es.ping_timeout}"
+                                    cluster-nodes="${es.host}"
+                                    client-transport-sniff="false"/>
 
 </beans>
