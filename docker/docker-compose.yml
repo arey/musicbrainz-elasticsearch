@@ -1,9 +1,9 @@
 postgresql:
-  build: postgres-dockerfile
+  image: arey/musicbrainz-database
   ports:
    - "5432:5432"
   env_file:
-   - ./postgres-dockerfile/postgres.env
+   - ./postgres.env
 elasticsearch:
   image: elasticsearch:1.7.1
   ports:

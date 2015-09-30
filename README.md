@@ -38,7 +38,7 @@ If you are on MacOS or Windows, you have to install [Boot2docker](http://boot2do
 Command lines to start PostgreSQL and Elasticsearch:
 
 * `git clone https://github.com/arey/musicbrainz-elasticsearch.git`
-* `cd docker-es-musicbrainz`
+* `cd musicbrainz-elasticsearch/docker`
 * `docker-compose up -d`
 * `docker-compose run postgresql /create-database.sh`
 * If you are using Boot2docker: 
