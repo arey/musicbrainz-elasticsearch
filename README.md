@@ -160,3 +160,7 @@ Status](https://javaetmoi.ci.cloudbees.com/job/musicbrainz-elasticsearch/badge/i
 
 [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/arey/musicbrainz-elasticsearch/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/arey/musicbrainz-elasticsearch/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
