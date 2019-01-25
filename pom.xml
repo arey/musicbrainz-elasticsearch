@@ -24,10 +24,10 @@
     </developer>
   </developers>
 
-  <!-- Continous Integration build hosted by CloudBees -->
+  <!-- Continous Integration build hosted by Travis CI -->
   <ciManagement>
-    <system>jenkins</system>
-    <url>https://javaetmoi.ci.cloudbees.com/job/musicbrainz-elasticsearch/</url>
+    <system>travis-ci</system>
+    <url>https://travis-ci.org/arey/musicbrainz-elasticsearch</url>
   </ciManagement>
   <issueManagement>
     <system>github</system>
