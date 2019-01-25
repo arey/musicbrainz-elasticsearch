@@ -57,7 +57,7 @@
     <version.slf4j>1.7.12</version.slf4j>
     <version.spring-framework>4.3.18.RELEASE</version.spring-framework>
     <version.commons-lang3>3.4</version.commons-lang3>
-    <version.spring-batch>3.0.5.RELEASE</version.spring-batch>
+    <version.spring-batch>3.0.10.RELEASE</version.spring-batch>
     <version.commons-io>2.4</version.commons-io>
     <version.musicbrainz-data>3.1.0</version.musicbrainz-data>
     <version.spring-batch-toolkit>1.0.1</version.spring-batch-toolkit>
